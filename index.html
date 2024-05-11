@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multiverse of Ants</title>
+</head>
+<body>
+<canvas id="canvas" width="800" height="600"></canvas>
+<div id="info">
+    <p>Ants: <span id="ants">0</span></p>
+    <p>TPS: <span id="tps">0</span></p>
+    <p>TPS History: <span id="tps-history"></span></p>
+</div>
+</body>
+<script>
+    const websocket = new WebSocket("ws://localhost:8765");
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    let entities = {};
+
+    let SCALE = 8;
+
+    websocket.onopen = function(event) {
+        console.log("Connection established");
+    };
+
+    websocket.onmessage = function(event) {
+        console.log(event.data);
+        const data = JSON.parse(event.data);
+        if (data.type === "ANT_MOVE") {
+            if (entities[data.ant.id]) {
+                ctx.clearRect(centerX+entities[data.ant.id].position.x*SCALE, centerY+entities[data.ant.id].position.y*SCALE, SCALE, SCALE);
+            } else {
+                document.getElementById("ants").innerText = (Object.keys(entities).length + 1).toString();
+            }
+            entities[data.ant.id] = data.ant;
+            ctx.fillStyle = data.ant.color;
+            ctx.fillStyle = data.ant.color;
+            ctx.fillRect(centerX+data.ant.position.x*SCALE, centerY+data.ant.position.y*SCALE, SCALE, SCALE);
+        }
+        else if (data.type === "ANT_DEATH") {
+            ctx.clearRect(centerX+entities[data.ant.id].position.x*SCALE, centerY+entities[data.ant.id].position.y*SCALE, SCALE, SCALE);
+            delete entities[data.ant.id];
+            document.getElementById("ants").innerText = Object.keys(entities).length.toString();
+        }
+        else if (data.type === "SIMULATION_TPS") {
+            document.getElementById("tps").innerText = data.state;
+            if (data.state < 200) {
+                document.getElementById("tps-history").innerText += data.state + ", ";
+            }
+        }
+
+    };
+
+</script>
+</html>
