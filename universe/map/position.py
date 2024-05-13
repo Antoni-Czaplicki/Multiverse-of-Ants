@@ -1,5 +1,7 @@
 import enum
 import math
+from functools import cache
+from typing import Tuple
 
 from universe.map.boundary import Boundary
 
@@ -11,13 +13,16 @@ class Direction(enum.Enum):
     WEST = 270
 
     @staticmethod
-    def from_angle(angle):
+    def from_angle(angle: int) -> "Direction":
+        """Convert an angle to a direction."""
         return Direction((angle + 45) % 360 // 90)
 
-    def to_angle(self):
+    def to_angle(self) -> int:
+        """Convert the direction to an angle."""
         return self.value
 
-    def to_arrow(self):
+    def to_arrow(self) -> str:
+        """Convert the direction to an arrow."""
         return {
             Direction.NORTH: "↑",
             Direction.EAST: "→",
@@ -28,69 +33,61 @@ class Direction(enum.Enum):
 
 class Position:
     def __init__(self, x: int, y: int, direction: Direction = Direction.NORTH):
+        """Initialize a position."""
         self.x = x
         self.y = y
         self.direction = direction
 
-    def __add__(self, other):
+    def __add__(self, other: "Position") -> "Position":
+        """Add two positions."""
         return Position(self.x + other.x, self.y + other.y)
 
-    def __sub__(self, other):
+    def __sub__(self, other: "Position") -> "Position":
+        """Subtract two positions."""
         return Position(self.x - other.x, self.y - other.y)
 
-    def __eq__(self, other):
+    def __eq__(self, other: "Position") -> bool:
+        """Check if two positions are equal."""
         return self.x == other.x and self.y == other.y
 
-    def __ne__(self, other):
+    def __ne__(self, other: "Position") -> bool:
+        """Check if two positions are not equal."""
         return not self.__eq__(other)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
+        """Get the hash of the position."""
         return hash((self.x, self.y))
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Get a string representation of the position."""
         return f"({self.x}, {self.y})"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Get a formal string representation of the position."""
         return f"Position({self.x}, {self.y})"
 
-    def __lt__(self, other):
-        return self.x < other.x or (self.x == other.x and self.y < other.y)
+    def __iter__(self) -> Tuple[int, int]:
+        """Iterate over the position."""
+        yield from (self.x, self.y)
 
-    def __le__(self, other):
-        return self.__lt__(other) or self.__eq__(other)
-
-    def __gt__(self, other):
-        return self.x > other.x or (self.x == other.x and self.y > other.y)
-
-    def __ge__(self, other):
-        return self.__gt__(other) or self.__eq__(other)
-
-    def __iter__(self):
-        yield self.x
-        yield self.y
-
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> int:
+        """Get an item from the position."""
         return (self.x, self.y)[index]
 
-    def __len__(self):
-        return 2
-
-    def __copy__(self):
-        return Position(self.x, self.y)
-
-    def __deepcopy__(self, memo):
-        return Position(self.x, self.y)
-
-    def manhattan_distance(self, other):
+    def manhattan_distance(self, other: "Position") -> int:
+        """Calculate the Manhattan distance to another position."""
         return abs(self.x - other.x) + abs(self.y - other.y)
 
-    def euclidean_distance(self, other):
+    def euclidean_distance(self, other: "Position") -> float:
+        """Calculate the Euclidean distance to another position."""
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
-    def chebyshev_distance(self, other):
+    def chebyshev_distance(self, other: "Position") -> int:
+        """Calculate the Chebyshev distance to another position."""
         return max(abs(self.x - other.x), abs(self.y - other.y))
 
-    def get_neighbors(self, distance=1):
+    def get_neighbors(self, distance: int = 1) -> list["Position"]:
+        """Get the neighbors of the position."""
         return [
             Position(self.x + dx, self.y + dy)
             for dx in range(-distance, distance + 1)
@@ -101,7 +98,11 @@ class Position:
     def direction_to(self, other):
         return (other - self).normalize()
 
-    def calculate_new_position(self, direction: Direction, distance: int = 1):
+    @cache
+    def calculate_new_position(
+        self, direction: Direction, distance: int = 1
+    ) -> "Position":
+        """Calculate a new position based on a direction and distance."""
         if direction == Direction.NORTH:
             return Position(
                 self.x, min(self.y + distance, Boundary.y + Boundary.height - 1)
@@ -117,23 +118,34 @@ class Position:
         else:
             raise ValueError(f"Invalid direction: {direction}")
 
-    def move(self, direction: Direction, distance: int = 1):
-        self.direction = direction
-        # print(f"Moving {distance} steps {direction} from {self}")
+    def move(
+        self,
+        direction: Direction = None,
+        distance: int = 1,
+        new_position: "Position" = None,
+    ):
+        """Move the position."""
+        if new_position:
+            if Boundary.contains(new_position):
+                self.x, self.y = new_position
+            else:
+                raise ValueError(f"Out of boundary: {new_position}")
+            return
+
         new_position = self.calculate_new_position(direction, distance)
 
+        self.direction = direction
         if Boundary.contains(new_position):
-            self.x = new_position.x
-            self.y = new_position.y
+            self.x, self.y = new_position
         else:
             raise ValueError(f"Out of boundary: {new_position}")
 
-    def can_move(self, direction: Direction, distance: int = 1):
-        new_position = self.calculate_new_position(direction, distance)
+    def can_move(self, direction: Direction, distance: int = 1) -> bool:
+        """Check if the position can move in a direction."""
+        return Boundary.contains(self.calculate_new_position(direction, distance))
 
-        return Boundary.contains(new_position)
-
-    def to_dict(self):
+    def to_dict(self) -> dict:
+        """Convert the position to a dictionary."""
         return {
             "x": self.x,
             "y": self.y,

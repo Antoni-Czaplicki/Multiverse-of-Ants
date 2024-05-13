@@ -6,54 +6,143 @@
 </head>
 <body>
 <canvas id="canvas" width="800" height="600"></canvas>
-<div id="info">
-    <p>Ants: <span id="ants">0</span></p>
-    <p>TPS: <span id="tps">0</span></p>
-    <p>TPS History: <span id="tps-history"></span></p>
+<div id="info" style="display: flex">
+    <div style="margin-right: 20px">
+        <p>Ants: <span id="ants">0</span></p>
+        <p>TPS: <span id="tps">0</span></p>
+    </div>
+    <div>
+        <p>State: <span id="state"></span></p>
+        <p>TPS History: <span id="tps-history" style="overflow: auto"></span></p>
+    </div>
 </div>
 </body>
 <script>
     const websocket = new WebSocket("ws://localhost:8765");
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    const centerX = 0
+    const centerY = 0
 
     let entities = {};
+    let nests = [];
+    let objects = [];
 
-    let SCALE = 8;
+    let objectTypeColors = {
+        "FOOD": "green",
+        "WATER": "blue",
+        "ROCK": "gray"
+    };
 
-    websocket.onopen = function(event) {
+    let tps_goal = 0;
+
+    let SCALE = 4;
+
+    websocket.onopen = function (event) {
         console.log("Connection established");
     };
 
-    websocket.onmessage = function(event) {
+    websocket.onmessage = function (event) {
         console.log(event.data);
         const data = JSON.parse(event.data);
         if (data.type === "ANT_MOVE") {
             if (entities[data.ant.id]) {
-                ctx.clearRect(centerX+entities[data.ant.id].position.x*SCALE, centerY+entities[data.ant.id].position.y*SCALE, SCALE, SCALE);
+                ctx.translate(centerX + entities[data.ant.id].position.x * SCALE + SCALE / 2, centerY + entities[data.ant.id].position.y * SCALE + SCALE / 2);
+                ctx.rotate(entities[data.ant.id].position.direction * Math.PI / 180);
+                if (checkIfEntityIsInNest(entities[data.ant.id])) {
+                    ctx.clearRect(
+                        Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
+                    );
+                    ctx.fillStyle = "lightgray";
+                    ctx.fillRect(
+                        Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
+                    );
+                } else {
+                    ctx.clearRect(
+                        Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
+                    );
+                }
+                ctx.resetTransform();
             } else {
                 document.getElementById("ants").innerText = (Object.keys(entities).length + 1).toString();
             }
             entities[data.ant.id] = data.ant;
-            ctx.fillStyle = data.ant.color;
-            ctx.fillStyle = data.ant.color;
-            ctx.fillRect(centerX+data.ant.position.x*SCALE, centerY+data.ant.position.y*SCALE, SCALE, SCALE);
-        }
-        else if (data.type === "ANT_DEATH") {
-            ctx.clearRect(centerX+entities[data.ant.id].position.x*SCALE, centerY+entities[data.ant.id].position.y*SCALE, SCALE, SCALE);
+            ctx.translate(centerX + data.ant.position.x * SCALE + SCALE / 2, centerY + data.ant.position.y * SCALE + SCALE / 2);
+            ctx.rotate(data.ant.position.direction * Math.PI / 180);
+            ctx.fillStyle = data.ant.role !== "QUEEN" ? data.ant.color : "gold";
+            ctx.fillRect(Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE));
+            ctx.resetTransform();
+        } else if (data.type === "ANT_DEATH") {
+            ctx.translate(centerX + entities[data.ant.id].position.x * SCALE + SCALE / 2, centerY + entities[data.ant.id].position.y * SCALE + SCALE / 2);
+            ctx.rotate(entities[data.ant.id].position.direction * Math.PI / 180);
+            if (checkIfEntityIsInNest(entities[data.ant.id])) {
+                ctx.clearRect(
+                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
+                );
+                ctx.fillStyle = "lightgray";
+                ctx.fillRect(
+                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
+                );
+            } else {
+                ctx.clearRect(
+                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
+                );
+            }
+            ctx.resetTransform();
             delete entities[data.ant.id];
             document.getElementById("ants").innerText = Object.keys(entities).length.toString();
-        }
-        else if (data.type === "SIMULATION_TPS") {
+        } else if (data.type === "SIMULATION_TPS") {
             document.getElementById("tps").innerText = data.state;
-            if (data.state < 200) {
+            if (data.state < tps_goal) {
                 document.getElementById("tps-history").innerText += data.state + ", ";
+            }
+        } else if (data.type === "SIMULATION_SET_TPS") {
+            tps_goal = data.state;
+        } else if (data.type === "SIMULATION_START") {
+            document.getElementById("state").innerText = "Running";
+        } else if (data.type === "SIMULATION_END") {
+            document.getElementById("state").innerText = "Finished";
+        } else if (data.type === "NEST_SPAWN") {
+            nests.push(data.target);
+            ctx.fillStyle = "lightgray"
+            ctx.fillRect(centerX + data.target.area.position_1.x * SCALE, centerY + data.target.area.position_1.y * SCALE, data.target.area.width * SCALE, data.target.area.height * SCALE);
+        } else if (data.type === "OBJECT_SPAWN") {
+            objects.push(data.target);
+            ctx.fillStyle = objectTypeColors[data.target.type];
+            ctx.fillRect(centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2));
+        } else if (data.type === "OBJECT_DESPAWN") {
+            for (let i = 0; i < objects.length; i++) {
+                if (objects[i].id === data.target.id) {
+                    objects.splice(i, 1);
+                    break;
+                }
+            }
+            if (checkIfEntityIsInNest(data.target)) {
+                ctx.clearRect(
+                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2)
+                );
+                ctx.fillStyle = "lightgray";
+                ctx.fillRect(
+                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2)
+                );
+            } else {
+                ctx.clearRect(
+                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2)
+                );
             }
         }
 
     };
+
+
+    function checkIfEntityIsInNest(entity) {
+        for (let i = 0; i < nests.length; i++) {
+            if (entity.position.x >= nests[i].area.position_1.x && entity.position.x <= nests[i].area.position_2.x && entity.position.y >= nests[i].area.position_1.y && entity.position.y <= nests[i].area.position_2.y) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 </script>
 </html>

@@ -10,7 +10,9 @@ from universe.update import Update, UpdateType
 
 
 async def handler(websocket):
-    async def callback(update_type: UpdateType, entity: Ant | None = None, target=None, state=None):
+    async def callback(
+        update_type: UpdateType, entity: Ant | None = None, target=None, state=None
+    ):
         event = Update(update_type, entity, target, state).to_dict()
         await websocket.send(json.dumps(event))
 
