@@ -100,49 +100,54 @@ class Position:
 
     @cache
     def calculate_new_position(
-        self, direction: Direction, distance: int = 1
+        self, boundary: Boundary, direction: Direction, distance: int = 1
     ) -> "Position":
         """Calculate a new position based on a direction and distance."""
         if direction == Direction.NORTH:
             return Position(
-                self.x, min(self.y + distance, Boundary.y + Boundary.height - 1)
+                self.x, min(self.y + distance, boundary.y + boundary.height - 1)
             )
         elif direction == Direction.EAST:
             return Position(
-                min(self.x + distance, Boundary.x + Boundary.width - 1), self.y
+                min(self.x + distance, boundary.x + boundary.width - 1), self.y
             )
         elif direction == Direction.SOUTH:
-            return Position(self.x, max(self.y - distance, Boundary.y))
+            return Position(self.x, max(self.y - distance, boundary.y))
         elif direction == Direction.WEST:
-            return Position(max(self.x - distance, Boundary.x), self.y)
+            return Position(max(self.x - distance, boundary.x), self.y)
         else:
             raise ValueError(f"Invalid direction: {direction}")
 
     def move(
         self,
+        boundary: Boundary,
         direction: Direction = None,
         distance: int = 1,
         new_position: "Position" = None,
     ):
         """Move the position."""
         if new_position:
-            if Boundary.contains(new_position):
+            if boundary.contains(new_position):
                 self.x, self.y = new_position
             else:
                 raise ValueError(f"Out of boundary: {new_position}")
             return
 
-        new_position = self.calculate_new_position(direction, distance)
+        new_position = self.calculate_new_position(boundary, direction, distance)
 
         self.direction = direction
-        if Boundary.contains(new_position):
+        if boundary.contains(new_position):
             self.x, self.y = new_position
         else:
             raise ValueError(f"Out of boundary: {new_position}")
 
-    def can_move(self, direction: Direction, distance: int = 1) -> bool:
+    def can_move(
+        self, boundary: Boundary, direction: Direction, distance: int = 1
+    ) -> bool:
         """Check if the position can move in a direction."""
-        return Boundary.contains(self.calculate_new_position(direction, distance))
+        return boundary.contains(
+            self.calculate_new_position(boundary, direction, distance)
+        )
 
     def to_dict(self) -> dict:
         """Convert the position to a dictionary."""

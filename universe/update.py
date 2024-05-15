@@ -10,6 +10,7 @@ class UpdateType(enum.Enum):
     SIMULATION_RESUME = 3
     SIMULATION_TPS = 4
     SIMULATION_SET_TPS = 5
+    SIMULATION_SET_BOUNDARIES = 6
 
     ANT_SPAWN = 10
     ANT_MOVE = 11

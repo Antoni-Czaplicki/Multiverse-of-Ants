@@ -4,8 +4,7 @@ class Boundary:
     width: int = 200
     height: int = 200
 
-    @staticmethod
-    def set_boundary(x: int, y: int, width: int, height: int) -> None:
+    def set_boundary(self, x: int, y: int, width: int, height: int) -> None:
         """
         Set the boundary with the given x, y, width, and height.
 
@@ -14,26 +13,36 @@ class Boundary:
         :param width: The width of the boundary.
         :param height: The height of the boundary.
         """
-        Boundary.x = x
-        Boundary.y = y
-        Boundary.width = width
-        Boundary.height = height
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
-    @staticmethod
-    def set_boundary_by_size(size: int) -> None:
+    def set_boundary_by_width_height(self, width: int, height: int) -> None:
+        """
+        Set the boundary by width and height. The x and y coordinates are set to zero.
+
+        :param width: The width of the boundary.
+        :param height: The height of the boundary.
+        """
+        self.x = 0
+        self.y = 0
+        self.width = width
+        self.height = height
+
+    def set_boundary_by_size(self, size: int) -> None:
         """
         Set the boundary by size. The x and y coordinates are set to negative half of the size,
         and the width and height are set to the size.
 
         :param size: The size to set the boundary.
         """
-        Boundary.x = 0
-        Boundary.y = 0
-        Boundary.width = size
-        Boundary.height = size
+        self.x = 0
+        self.y = 0
+        self.width = size
+        self.height = size
 
-    @staticmethod
-    def contains(position) -> bool:
+    def contains(self, position) -> bool:
         """
         Check if the given position is within the boundary.
 
@@ -41,6 +50,6 @@ class Boundary:
         :return: True if the position is within the boundary, False otherwise.
         """
         return (
-            Boundary.x <= position.x <= Boundary.x + Boundary.width
-            and Boundary.y <= position.y <= Boundary.y + Boundary.height
+            self.x <= position.x <= self.x + self.width
+            and self.y <= position.y <= self.y + self.height
         )

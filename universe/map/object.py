@@ -37,7 +37,9 @@ class Object:
         """Return a formal string representation of the object."""
         return f"Object({self.position}, {self.object_type})"
 
-    async def interact(self, ant: "Ant", update_callback: Callable):
+    async def interact(
+        self, boundary: "Boundary", ant: "Ant", update_callback: Callable
+    ):
         """
         Interact with an ant.
 
@@ -55,7 +57,10 @@ class Object:
             if not self.position == ant.position:
                 return  # Cannot interact with the rock if the ant is not on the same position
             ant.health -= 1
-            ant.position.move(ant.position.direction, -1)
+            try:
+                ant.position.move(boundary, ant.position.direction, -1)
+            except ValueError:
+                self.usages_left = 0  # Destroy the rock if the ant is at the boundary
         else:
             raise ValueError("Invalid object type")
         self.usages_left -= 1

@@ -16,6 +16,7 @@
         <p>TPS History: <span id="tps-history" style="overflow: auto"></span></p>
     </div>
 </div>
+<button onclick="window.location.reload()" style="position: absolute; margin: 10px; right: 0; top: 0">Reload</button>
 </body>
 <script>
     const websocket = new WebSocket("ws://localhost:8765");
@@ -40,6 +41,13 @@
 
     websocket.onopen = function (event) {
         console.log("Connection established");
+        websocket.send(JSON.stringify({
+            type: "SIMULATION_START"
+        }));
+    };
+
+    websocket.onerror = function (event) {
+        document.getElementById("state").innerText = "Connection failed";
     };
 
     websocket.onmessage = function (event) {
