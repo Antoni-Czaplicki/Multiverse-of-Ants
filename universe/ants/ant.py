@@ -60,15 +60,19 @@ class Ant:
             proposed_positions = [
                 {"new_position": position}
                 for position in self.position.get_neighbors(self.speed)
-                if (position.x, position.y) in universe.ants
-                and any(
-                    type(ant) is not type(self)
-                    for ant in universe.ants[(position.x, position.y)]
+                if (
+                    (position.x, position.y) in universe.ants
+                    and any(
+                        type(ant) is not type(self)
+                        for ant in universe.ants[(position.x, position.y)]
+                    )
                 )
-                or (position.x, position.y) in universe.objects
-                and universe.objects[(position.x, position.y)]
-                and universe.objects[(position.x, position.y)][0].object_type
-                is not ObjectType.ROCK
+                or (
+                    (position.x, position.y) in universe.objects
+                    and universe.objects[(position.x, position.y)]
+                    and universe.objects[(position.x, position.y)][0].object_type
+                    is not ObjectType.ROCK
+                )
             ]
 
             if self.role == Role.QUEEN:

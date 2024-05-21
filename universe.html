@@ -8,15 +8,19 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css"
     >
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="/universe.css">
 </head>
 <body>
 <div>
     <div class="columns" style="max-width: 100vw;">
         <div class="column is-one-fifth" style="margin-left: 10px">
             <div class="box">
-                <h3 class="title is-3">Controls</h3>
+                <h3 class="title is-3" id="uni-title"><iconify-icon icon="fa-solid:arrow-left" inline id="back-button" style="cursor: pointer"></iconify-icon> <span id="uni-title-text"></span></h3>
+            </div>
+            <div class="box">
+                <h3 class="title is-4">Controls</h3>
                 <div class="buttons">
-
                     <button class="button is-primary is-fullwidth" id="start-button">Start</button>
                     <button class="button is-danger is-fullwidth" id="stop-button">Stop</button>
                     <button class="button is-warning is-fullwidth" id="pause-button">Pause</button>
@@ -24,7 +28,7 @@
                 </div>
             </div>
             <div class="box">
-                <h3 class="title is-3">Settings</h3>
+                <h3 class="title is-4">Settings</h3>
                 <div style="display: flex; justify-content: center;">
                     <div class="rectangle" id="settings-rectangle">
                         <div class="label-top" id="label-width"></div>
@@ -38,14 +42,23 @@
             </div>
         </div>
         <div class="column">
-            <div class="box" style="display: flex; justify-content: center; align-items: center; height: 98vh;">
+            <div class="box"
+                 style="display: flex; justify-content: center; align-items: center; height: 98vh; position: relative;">
                 <canvas id="canvas"
                         style="width: 100%; height: 100%; border-radius: var(--bulma-radius-large); background-color: aliceblue;"></canvas>
+                <div id="blur-overlay" style="opacity: 0;">
+                    <div class="notification is-warning is-light">
+                        <p>Simulation has stopped, but the UI needs to catch up.</p>
+                        <p>Please wait a few seconds to let us finish.</p>
+                        <p><small>This is likely due to a high TPS setting or this tab being opened on a slow
+                            device.</small></p>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="column is-one-fifth">
             <div class="box">
-                <h3 class="title is-3">Info</h3>
+                <h3 class="title is-4">Info</h3>
                 <div class="content">
                     <p>Ants: <span id="ants">0</span></p>
                     <p>TPS: <span id="tps">0</span></p>
@@ -57,256 +70,7 @@
     </div>
 </div>
 </body>
-<script>
-    function fitCanvasToContainer(canvas) {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    }
-
-    const canvas = document.getElementById("canvas");
-    fitCanvasToContainer(canvas);
-
-    let SCALE = 4;
-    let tempScale = 4;
-
-    document.getElementById("label-width").innerText = canvas.width;
-    document.getElementById("label-height").innerText = canvas.height;
-    document.getElementById("label-scale").innerText = tempScale + "x";
-
-    let settingsRectangle = document.getElementById("settings-rectangle");
-    let applySettingsButton = document.getElementById("apply-settings-button");
-    settingsRectangle.addEventListener("click", function () {
-        if (tempScale === 1) {
-            tempScale = 2;
-        } else if (tempScale === 2) {
-            tempScale = 4;
-        } else if (tempScale === 4) {
-            tempScale = 8;
-        } else if (tempScale === 8) {
-            tempScale = 12;
-        } else if (tempScale === 12) {
-            tempScale = 16;
-            settingsRectangle.style.cursor = "zoom-out";
-        } else if (tempScale === 16) {
-            tempScale = 1;
-            settingsRectangle.style.cursor = "zoom-in";
-        }
-        document.getElementById("label-scale").innerText = tempScale + "x";
-        applySettingsButton.disabled = false;
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        settingsRectangle.style.height = canvas.height * (settingsRectangle.offsetWidth / canvas.width) + "px";
-    });
-
-    window.addEventListener("resize", function () {
-        settingsRectangle.style.height = canvas.offsetHeight * (settingsRectangle.offsetWidth / canvas.offsetWidth) + "px";
-        document.getElementById("label-width").innerText = canvas.offsetWidth;
-        document.getElementById("label-height").innerText = canvas.offsetHeight;
-        applySettingsButton.disabled = false;
-    });
-
-    applySettingsButton.addEventListener("click", function () {
-        SCALE = tempScale;
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        applySettingsButton.disabled = true;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ants = {};
-        nests = [];
-        objects = [];
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_SET_BOUNDARIES",
-            width: Math.floor(canvas.width / SCALE),
-            height: Math.floor(canvas.height / SCALE)
-        }));
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_START"
-        }));
-    });
-
-
-    let host = window.location.hostname;
-
-    const websocket = new WebSocket(`ws://${host}:8765`);
-    const ctx = canvas.getContext("2d");
-    const centerX = 0
-    const centerY = 0
-
-    let ants = {};
-    let nests = [];
-    let objects = [];
-
-    let objectTypeColors = {
-        "FOOD": "green",
-        "WATER": "blue",
-        "ROCK": "gray"
-    };
-
-    let tps_goal = 0;
-
-
-    websocket.onopen = function (event) {
-        console.log("Connection established");
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_SET_BOUNDARIES",
-            width: Math.floor(canvas.width / SCALE),
-            height: Math.floor(canvas.height / SCALE)
-        }));
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_START"
-        }));
-    };
-
-    websocket.onerror = function (event) {
-        document.getElementById("state").innerText = "Connection failed";
-    };
-
-    websocket.onmessage = function (event) {
-        console.log(event.data);
-        const data = JSON.parse(event.data);
-        if (data.type === "ANT_MOVE") {
-            if (ants[data.ant.id]) {
-                ctx.translate(centerX + ants[data.ant.id].position.x * SCALE + Math.floor(SCALE / 2), centerY + ants[data.ant.id].position.y * SCALE + Math.floor(SCALE / 2));
-                if (SCALE >= 2) {
-                    ctx.rotate(ants[data.ant.id].position.direction * Math.PI / 180);
-                }
-                if (checkIfEntityIsInNest(ants[data.ant.id])) {
-                    // ctx.clearRect(
-                    //     Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), Math.floor(SCALE)
-                    // );
-                    ctx.fillStyle = "lightgray";
-                    ctx.fillRect(
-                        Math.ceil(-SCALE / 4), Math.ceil(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), SCALE
-                    );
-                } else {
-                    ctx.clearRect(
-                        Math.ceil(-SCALE / 4), Math.ceil(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), SCALE
-                    );
-                }
-                ctx.resetTransform();
-            } else {
-                document.getElementById("ants").innerText = (Object.keys(ants).length + 1).toString();
-            }
-            ants[data.ant.id] = data.ant;
-            ctx.translate(centerX + data.ant.position.x * SCALE + Math.floor(SCALE / 2), centerY + data.ant.position.y * SCALE + Math.floor(SCALE / 2));
-            if (SCALE >= 2) {
-                ctx.rotate(data.ant.position.direction * Math.PI / 180);
-            }
-            ctx.fillStyle = data.ant.role !== "QUEEN" ? data.ant.color : "gold";
-            ctx.fillRect(Math.ceil(-SCALE / 4), Math.ceil(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), Math.floor(SCALE));
-            ctx.resetTransform();
-        } else if (data.type === "ANT_DEATH") {
-            ctx.translate(centerX + ants[data.ant.id].position.x * SCALE + Math.max(Math.floor(SCALE / 2), 1), centerY + ants[data.ant.id].position.y * SCALE + Math.floor(SCALE / 2));
-            if (SCALE >= 2) {
-                ctx.rotate(ants[data.ant.id].position.direction * Math.PI / 180);
-            }
-            if (checkIfEntityIsInNest(ants[data.ant.id])) {
-                ctx.clearRect(
-                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), Math.floor(SCALE)
-                );
-                ctx.fillStyle = "lightgray";
-                ctx.fillRect(
-                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), Math.floor(SCALE)
-                );
-            } else {
-                ctx.clearRect(
-                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.max(Math.floor(SCALE / 2), 1), Math.floor(SCALE)
-                );
-            }
-            ctx.resetTransform();
-            delete ants[data.ant.id];
-            document.getElementById("ants").innerText = Object.keys(ants).length.toString();
-        } else if (data.type === "SIMULATION_TPS") {
-            document.getElementById("tps").innerText = data.state;
-            if (data.state < tps_goal) {
-                document.getElementById("tps-history").innerText += data.state + ", ";
-            }
-        } else if (data.type === "SIMULATION_SET_TPS") {
-            tps_goal = data.state;
-        } else if (data.type === "SIMULATION_START") {
-            document.getElementById("state").innerText = "Running";
-        } else if (data.type === "SIMULATION_END") {
-            document.getElementById("state").innerText = "Finished";
-        } else if (data.type === "SIMULATION_PAUSE") {
-            document.getElementById("state").innerText = "Paused";
-        } else if (data.type === "SIMULATION_RESUME") {
-            document.getElementById("state").innerText = "Running";
-        } else if (data.type === "NEST_SPAWN") {
-            nests.push(data.target);
-            ctx.fillStyle = "lightgray"
-            ctx.fillRect(centerX + data.target.area.position_1.x * SCALE, centerY + data.target.area.position_1.y * SCALE, data.target.area.width * SCALE, data.target.area.height * SCALE);
-        } else if (data.type === "OBJECT_SPAWN") {
-            objects.push(data.target);
-            ctx.fillStyle = objectTypeColors[data.target.type];
-            ctx.fillRect(centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1));
-        } else if (data.type === "OBJECT_DESPAWN") {
-            for (let i = 0; i < objects.length; i++) {
-                if (objects[i].id === data.target.id) {
-                    objects.splice(i, 1);
-                    break;
-                }
-            }
-            if (checkIfEntityIsInNest(data.target)) {
-                ctx.clearRect(
-                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1)
-                );
-                ctx.fillStyle = "lightgray";
-                ctx.fillRect(
-                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1)
-                );
-            } else {
-                ctx.clearRect(
-                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1)
-                );
-            }
-        }
-
-    };
-
-
-    function checkIfEntityIsInNest(entity) {
-        for (let i = 0; i < nests.length; i++) {
-            if (entity.position.x >= nests[i].area.position_1.x && entity.position.x <= nests[i].area.position_2.x && entity.position.y >= nests[i].area.position_1.y && entity.position.y <= nests[i].area.position_2.y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    document.getElementById("start-button").addEventListener("click", function () {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ants = {};
-        nests = [];
-        objects = [];
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_SET_BOUNDARIES",
-            width: Math.floor(canvas.width / SCALE),
-            height: Math.floor(canvas.height / SCALE)
-        }));
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_START"
-        }));
-    });
-
-    document.getElementById("stop-button").addEventListener("click", function () {
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_END"
-        }));
-    });
-
-    document.getElementById("pause-button").addEventListener("click", function () {
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_PAUSE"
-        }));
-    });
-
-    document.getElementById("resume-button").addEventListener("click", function () {
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_RESUME"
-        }));
-    });
-</script>
+<script src="/universe.js"></script>
 <style>
     html, body {
         /*overflow-y: hidden; !* Hide vertical scrollbar *!*/
@@ -355,6 +119,25 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+    }
+
+    #blur-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        transition: 0.5s;
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
+        cursor: default;
     }
 </style>
 </html>

@@ -57,7 +57,9 @@ def print_map(ants, boundary) -> None:
     print("\n")
 
 
-async def create_ant(ant_type: type, universe: Universe) -> None:
+async def create_ant(
+    ant_type: type, universe: Universe, update_callback: Callable
+) -> None:
     """Helper function to create an ant and append it to ants list."""
     new_ant = ant_type(
         Position(
@@ -71,6 +73,7 @@ async def create_ant(ant_type: type, universe: Universe) -> None:
         )
     )
     universe.ants[(new_ant.position.x, new_ant.position.y)].append(new_ant)
+    await update_callback(UpdateType.ANT_SPAWN, new_ant)
 
 
 async def create_random_object(universe: Universe, update_callback: Callable) -> None:
@@ -98,9 +101,9 @@ async def initial_spawn(
 ) -> None:
     """Initial spawn of ants, nests and objects in the universe."""
     for _ in range(ANTS // 3):
-        await create_ant(BlackAnt, universe)
-        await create_ant(BlackAnt, universe)
-        await create_ant(RedAnt, universe)
+        await create_ant(BlackAnt, universe, update_callback)
+        await create_ant(BlackAnt, universe, update_callback)
+        await create_ant(RedAnt, universe, update_callback)
     nest_1 = Nest(Nest.generate_random_nest_area(universe))
     await update_callback(UpdateType.NEST_SPAWN, target=nest_1)
     nest_2 = Nest(
@@ -142,7 +145,7 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
     universe = Universe()
 
     await update_callback(UpdateType.SIMULATION_START)
-    universe.rng.set_seed(config.get("seed", 1234))
+    universe.rng.set_seed(config.get("seed", "0"))
     if (
         "boundary" in config
         and "width" in config["boundary"]
