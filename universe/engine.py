@@ -73,6 +73,7 @@ async def create_ant(
         )
     )
     universe.ants[(new_ant.position.x, new_ant.position.y)].append(new_ant)
+    universe.ants_count += 1
     await update_callback(UpdateType.ANT_SPAWN, new_ant)
 
 
@@ -92,6 +93,7 @@ async def create_random_object(universe: Universe, update_callback: Callable) ->
         ),
     )
     universe.objects[(new_object.position.x, new_object.position.y)].append(new_object)
+    universe.objects_count += 1
     await update_callback(UpdateType.OBJECT_SPAWN, target=new_object)
 
 
@@ -100,7 +102,9 @@ async def initial_spawn(
     update_callback: Callable,
 ) -> None:
     """Initial spawn of ants, nests and objects in the universe."""
-    for _ in range(ANTS // 3):
+    for _ in range(
+        universe.rng.randint(100, max(universe.boundary.size() // 500, 123)) // 3
+    ):
         await create_ant(BlackAnt, universe, update_callback)
         await create_ant(BlackAnt, universe, update_callback)
         await create_ant(RedAnt, universe, update_callback)
@@ -136,7 +140,7 @@ async def initial_spawn(
     universe.ants[(queen_1.position.x, queen_1.position.y)].append(queen_1)
     universe.ants[(queen_2.position.x, queen_2.position.y)].append(queen_2)
 
-    for i in range(OBJECTS):
+    for _ in range(universe.rng.randint(75, max(universe.boundary.size() // 500, 100))):
         await create_random_object(universe, update_callback)
 
 
@@ -187,9 +191,13 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
                     and ant in universe.ants[(ant.position.x, ant.position.y)]
                 ):
                     universe.ants[(ant.position.x, ant.position.y)].remove(ant)
+                    universe.ants_count -= 1
 
-        for _ in range(universe.rng.randint(0, 15)):
-            await create_random_object(universe, update_callback)
+        if universe.objects_count < universe.MAX_OBJECTS:
+            for _ in range(
+                universe.rng.randint(0, max(universe.boundary.size() // 2000, 10))
+            ):
+                await create_random_object(universe, update_callback)
 
         temp_tps = round(
             1 / (datetime.now() - last_timestamp).total_seconds()

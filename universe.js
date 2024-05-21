@@ -12,8 +12,10 @@ let mathCeilScaleTwo = Math.ceil(SCALE / 2);
 let mathFloorScaleFour = Math.floor(SCALE / 4);
 let mathCeilScaleFour = Math.ceil(SCALE / 4);
 let maxOneAndMathFloorScaleTwo = Math.max(mathFloorScaleTwo, 1);
+let mathCeilNegScaleTwo = Math.ceil(-SCALE / 2);
+let mathCeilNegScaleFour = Math.ceil(-SCALE / 4);
 
-let tempScale = 4;
+let tempScale = SCALE;
 
 document.getElementById("label-width").innerText = canvas.width;
 document.getElementById("label-height").innerText = canvas.height;
@@ -53,12 +55,16 @@ window.addEventListener("resize", function () {
 });
 
 applySettingsButton.addEventListener("click", function () {
+    ignoreMessages = true;
+    document.getElementById("blur-overlay").style.opacity = 1;
     SCALE = tempScale;
     mathFloorScaleTwo = Math.floor(SCALE / 2);
     mathCeilScaleTwo = Math.ceil(SCALE / 2);
     mathFloorScaleFour = Math.floor(SCALE / 4);
     mathCeilScaleFour = Math.ceil(SCALE / 4);
     maxOneAndMathFloorScaleTwo = Math.max(mathFloorScaleTwo, 1);
+    mathCeilNegScaleTwo = Math.ceil(-SCALE / 2);
+    mathCeilNegScaleFour = Math.ceil(-SCALE / 4);
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
     applySettingsButton.disabled = true;
@@ -72,8 +78,7 @@ applySettingsButton.addEventListener("click", function () {
         height: Math.floor(canvas.height / SCALE)
     }));
     websocket.send(JSON.stringify({
-        type: "SIMULATION_SET_SEED",
-        seed: seed
+        type: "SIMULATION_SET_SEED", seed: seed
     }));
     websocket.send(JSON.stringify({
         type: "SIMULATION_START"
@@ -84,7 +89,9 @@ applySettingsButton.addEventListener("click", function () {
 let host = window.location.hostname;
 let seed = new URLSearchParams(window.location.search).get("seed") || "0";
 
-document.getElementById("uni-title-text").innerText = "Universe " + seed;
+let ignoreMessages = false;
+
+document.getElementById("uni-title-text").innerText = seed;
 
 const websocket = new WebSocket(`ws://${host}:8765`);
 const ctx = canvas.getContext("2d");
@@ -95,9 +102,7 @@ let nests = [];
 let objects = [];
 
 let objectTypeColors = {
-    "FOOD": "green",
-    "WATER": "blue",
-    "ROCK": "gray"
+    "FOOD": "green", "WATER": "blue", "ROCK": "gray"
 };
 
 let tps_goal = 0;
@@ -111,8 +116,7 @@ websocket.onopen = function (event) {
         height: Math.floor(canvas.height / SCALE)
     }));
     websocket.send(JSON.stringify({
-        type: "SIMULATION_SET_SEED",
-        seed: seed
+        type: "SIMULATION_SET_SEED", seed: seed
     }));
     websocket.send(JSON.stringify({
         type: "SIMULATION_START"
@@ -124,9 +128,11 @@ websocket.onerror = function (event) {
 };
 
 
-
 websocket.onmessage = function (event) {
     console.log(event.data);
+    if (ignoreMessages && JSON.parse(event.data).type !== "SIMULATION_START") {
+        return;
+    }
     const data = JSON.parse(event.data);
     switch (data.type) {
         case "ANT_SPAWN":
@@ -136,7 +142,7 @@ websocket.onmessage = function (event) {
                 ctx.rotate(data.ant.position.direction * Math.PI / 180);
             }
             ctx.fillStyle = data.ant.role !== "QUEEN" ? data.ant.color : "gold";
-            ctx.fillRect(-mathCeilScaleFour, -mathCeilScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
+            ctx.fillRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
             ctx.resetTransform();
             document.getElementById("ants").innerText = Object.keys(ants).length.toString();
             break;
@@ -149,13 +155,9 @@ websocket.onmessage = function (event) {
                 }
                 if (checkIfEntityIsInNest(ants[data.ant.id])) {
                     ctx.fillStyle = "lightgray";
-                    ctx.fillRect(
-                        -mathCeilScaleFour, -mathCeilScaleTwo, maxOneAndMathFloorScaleTwo, SCALE
-                    );
+                    ctx.fillRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
                 } else {
-                    ctx.clearRect(
-                        -mathCeilScaleFour, -mathCeilScaleTwo, maxOneAndMathFloorScaleTwo, SCALE
-                    );
+                    ctx.clearRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
                 }
                 ctx.restore();
             } else {
@@ -167,7 +169,7 @@ websocket.onmessage = function (event) {
                 ctx.rotate(data.ant.position.direction * Math.PI / 180);
             }
             ctx.fillStyle = data.ant.role !== "QUEEN" ? data.ant.color : "gold";
-            ctx.fillRect(-mathCeilScaleFour, -mathCeilScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
+            ctx.fillRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
             ctx.resetTransform();
             break;
         case "ANT_DEATH":
@@ -179,17 +181,11 @@ websocket.onmessage = function (event) {
                 ctx.rotate(ants[data.ant.id].position.direction * Math.PI / 180);
             }
             if (checkIfEntityIsInNest(ants[data.ant.id])) {
-                ctx.clearRect(
-                    -mathFloorScaleFour, -mathFloorScaleTwo, maxOneAndMathFloorScaleTwo, SCALE
-                );
+                ctx.clearRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
                 ctx.fillStyle = "lightgray";
-                ctx.fillRect(
-                    -mathFloorScaleFour, -mathFloorScaleTwo, maxOneAndMathFloorScaleTwo, SCALE
-                );
+                ctx.fillRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
             } else {
-                ctx.clearRect(
-                    -mathFloorScaleFour, -mathFloorScaleTwo, maxOneAndMathFloorScaleTwo, SCALE
-                );
+                ctx.clearRect(mathCeilNegScaleFour, mathCeilNegScaleTwo, maxOneAndMathFloorScaleTwo, SCALE);
             }
             ctx.resetTransform();
             delete ants[data.ant.id];
@@ -205,7 +201,9 @@ websocket.onmessage = function (event) {
             tps_goal = data.state;
             break;
         case "SIMULATION_START":
+            ignoreMessages = false;
             document.getElementById("state").innerText = "Running";
+            document.getElementById("blur-overlay").style.opacity = 0;
             break;
         case "SIMULATION_END":
             document.getElementById("state").innerText = "Finished";
@@ -230,7 +228,7 @@ websocket.onmessage = function (event) {
         case "OBJECT_SPAWN":
             objects.push(data.target);
             ctx.fillStyle = objectTypeColors[data.target.type];
-            ctx.fillRect(data.target.position.x * SCALE, data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1));
+            ctx.fillRect(data.target.position.x * SCALE, data.target.position.y * SCALE, maxOneAndMathFloorScaleTwo, maxOneAndMathFloorScaleTwo);
             break;
         case "OBJECT_DESPAWN":
             for (let i = 0; i < objects.length; i++) {
@@ -240,17 +238,11 @@ websocket.onmessage = function (event) {
                 }
             }
             if (checkIfEntityIsInNest(data.target)) {
-                ctx.clearRect(
-                    data.target.position.x * SCALE, data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1)
-                );
+                ctx.clearRect(data.target.position.x * SCALE, data.target.position.y * SCALE, maxOneAndMathFloorScaleTwo, maxOneAndMathFloorScaleTwo);
                 ctx.fillStyle = "lightgray";
-                ctx.fillRect(
-                    data.target.position.x * SCALE, data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1)
-                );
+                ctx.fillRect(data.target.position.x * SCALE, data.target.position.y * SCALE, maxOneAndMathFloorScaleTwo, maxOneAndMathFloorScaleTwo);
             } else {
-                ctx.clearRect(
-                    data.target.position.x * SCALE, data.target.position.y * SCALE, Math.max(Math.floor(SCALE / 2), 1), Math.max(Math.floor(SCALE / 2), 1)
-                );
+                ctx.clearRect(data.target.position.x * SCALE, data.target.position.y * SCALE, maxOneAndMathFloorScaleTwo, maxOneAndMathFloorScaleTwo);
             }
             break;
         default:
@@ -258,7 +250,6 @@ websocket.onmessage = function (event) {
             break;
     }
 };
-
 
 
 function checkIfEntityIsInNest(entity) {
@@ -271,6 +262,8 @@ function checkIfEntityIsInNest(entity) {
 }
 
 document.getElementById("start-button").addEventListener("click", function () {
+    ignoreMessages = true;
+    document.getElementById("blur-overlay").style.opacity = 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ants = {};
     nests = [];
@@ -281,8 +274,7 @@ document.getElementById("start-button").addEventListener("click", function () {
         height: Math.floor(canvas.height / SCALE)
     }));
     websocket.send(JSON.stringify({
-        type: "SIMULATION_SET_SEED",
-        seed: seed
+        type: "SIMULATION_SET_SEED", seed: seed
     }));
     websocket.send(JSON.stringify({
         type: "SIMULATION_START"

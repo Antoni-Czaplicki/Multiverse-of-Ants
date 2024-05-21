@@ -184,16 +184,20 @@ class Ant:
         max_count: int,
         update_callback: Callable,
     ):
-        for _ in range(
-            universe.rng.choice([universe.rng.randint(0, max_count), 0, 0, 0, 0])
-        ):
-            for direction in self.available_directions(universe.boundary):
-                new_position = self.position.calculate_new_position(
-                    universe.boundary, direction, 1
-                )
-                new_ant = type(self)(new_position)
-                universe.ants[(new_ant.position.x, new_ant.position.y)].append(new_ant)
-                await update_callback(UpdateType.ANT_SPAWN, new_ant)
+        if universe.ants_count < universe.MAX_ANTS:
+            for _ in range(
+                universe.rng.choice([universe.rng.randint(0, max_count), 0, 0, 0, 0])
+            ):
+                for direction in self.available_directions(universe.boundary):
+                    new_position = self.position.calculate_new_position(
+                        universe.boundary, direction, 1
+                    )
+                    new_ant = type(self)(new_position)
+                    universe.ants[(new_ant.position.x, new_ant.position.y)].append(
+                        new_ant
+                    )
+                    universe.ants_count += 1
+                    await update_callback(UpdateType.ANT_SPAWN, new_ant)
 
     async def process(
         self,
@@ -231,6 +235,7 @@ class Ant:
                     universe.objects[(entity.position.x, entity.position.y)].remove(
                         entity
                     )
+                    universe.objects_count -= 1
                     await update_callback(UpdateType.OBJECT_DESPAWN, target=entity)
 
         if self.role is Role.QUEEN:

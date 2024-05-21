@@ -15,6 +15,11 @@ class Universe:
     objects: Dict[Tuple[int, int], List[Object]]
     nests: List[Nest]
 
+    MAX_ANTS = 500
+    MAX_OBJECTS = 500
+    ants_count = 0
+    objects_count = 0
+
     def __init__(self):
         self.rng = RNG()
         self.boundary = Boundary()

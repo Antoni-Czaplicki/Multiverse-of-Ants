@@ -53,3 +53,11 @@ class Boundary:
             self.x <= position.x <= self.x + self.width
             and self.y <= position.y <= self.y + self.height
         )
+
+    def size(self) -> int:
+        """
+        Get the size of the boundary.
+
+        :return: The size of the boundary.
+        """
+        return self.width * self.height

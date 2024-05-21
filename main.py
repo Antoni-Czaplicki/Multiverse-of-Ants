@@ -13,7 +13,7 @@ from universe.update import Update, UpdateType
 
 
 def start_http_server():
-    PORT = 8000
+    PORT = 80
     Handler = http.server.SimpleHTTPRequestHandler
 
     with socketserver.TCPServer(("", PORT), Handler) as httpd:
