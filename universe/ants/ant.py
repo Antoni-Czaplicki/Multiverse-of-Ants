@@ -1,9 +1,12 @@
 import enum
-from typing import Callable, List
+from typing import TYPE_CHECKING, Callable, List
 
-from universe.map.object import Object, ObjectType
-from universe.map.position import Direction, Position
+from universe.map import Direction, Object, ObjectType, Position
 from universe.update import UpdateType
+
+if TYPE_CHECKING:
+    from universe.map.boundary import Boundary
+    from universe.universe import Universe
 
 
 class Role(enum.Enum):

@@ -1,7 +1,11 @@
 import enum
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
 
 from .position import Position
+
+if TYPE_CHECKING:
+    from universe.ants import Ant
+    from universe.map.boundary import Boundary
 
 
 class ObjectType(enum.Enum):
@@ -43,6 +47,7 @@ class Object:
         """
         Interact with an ant.
 
+        :param boundary: The boundary of the universe.
         :param ant: The ant to interact with.
         :type ant: Ant
         :param update_callback: The callback function to update the state.

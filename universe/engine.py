@@ -4,14 +4,13 @@ from typing import Callable, Optional
 
 from termcolor import colored
 
+from universe.ants import BlackAnt, RedAnt
+from universe.ants.ant import Role
+from universe.map.nest import Nest
+from universe.map.object import Object, ObjectType
 from universe.map.position import Direction, Position
-
-from .ants import BlackAnt, RedAnt
-from .ants.ant import Role
-from .map.nest import Nest
-from .map.object import Object, ObjectType
-from .universe import Universe
-from .update import UpdateType
+from universe.universe import Universe
+from universe.update import UpdateType
 
 SIZE = 150
 
@@ -43,9 +42,9 @@ def print_map(ants, boundary) -> None:
                 print(
                     colored(
                         ant.position.direction.to_arrow(),
-                        color=color,
+                        color=color,  # type: ignore
                         on_color=on_color,
-                        force_color="True",
+                        force_color=True,
                     ),
                     end=" ",
                 )
@@ -165,15 +164,10 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
         f"universe.boundary: \n-x: {universe.boundary.x}\n-y: {universe.boundary.y}\nx: {universe.boundary.x + universe.boundary.width}\ny: {universe.boundary.y + universe.boundary.height}\n"
     )
 
-    # ants: Dict[Tuple[int, int], List[Ant]] = defaultdict(list)
-    # objects: Dict[Tuple[int, int], List[Object]] = defaultdict(list)
-    #
-    # nests: List[Nest] = []
-
     await initial_spawn(universe, update_callback)
 
-    last_timestamp = datetime.now()
     await update_callback(UpdateType.SIMULATION_SET_TPS, state=TPS)
+    last_timestamp = datetime.now()
 
     for i in range(ROUNDS):
         while config.get("pause", False):
@@ -216,7 +210,7 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
             await asyncio.sleep(pause_time)
         last_timestamp = datetime.now()
 
-        # print_map([ant for ant_row in ants.values() for ant in ant_row], universe.boundary)
+        # print_map([ant for ant_row in universe.ants.values() for ant in ant_row], universe.boundary)
 
     print("Game over!")
     await update_callback(UpdateType.SIMULATION_END)

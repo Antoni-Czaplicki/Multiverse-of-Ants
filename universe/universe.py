@@ -2,9 +2,7 @@ from collections import defaultdict
 from typing import Dict, List, Tuple
 
 from .ants import Ant
-from .map.boundary import Boundary
-from .map.nest import Nest
-from .map.object import Object
+from .map import Boundary, Nest, Object
 from .rng import RNG
 
 

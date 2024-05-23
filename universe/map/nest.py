@@ -1,14 +1,16 @@
-from typing import Optional, Type
-
-from universe.ants import Ant
+from typing import TYPE_CHECKING, Optional, Type
 
 from .area import Area
 from .position import Position
 
+if TYPE_CHECKING:
+    from universe.ants import Ant
+    from universe.universe import Universe
+
 
 class Nest:
     ants_per_unit_area: int = 5
-    queen: Ant = None
+    queen: "Ant" = None
 
     def __init__(self, area: Area):
         """
@@ -30,7 +32,7 @@ class Nest:
         """
         return position in self.area
 
-    def ants_type(self) -> Type[Ant]:
+    def ants_type(self) -> Type["Ant"]:
         """
         Get the type of the queen ant.
 
@@ -50,6 +52,7 @@ class Nest:
         """
         Generate a random nest area.
 
+        :param universe: The universe to generate the nest area in.
         :param size_from: The minimum size of the nest area.
         :param size_to: The maximum size of the nest area.
         :param min_distance: The minimum distance from the given area.

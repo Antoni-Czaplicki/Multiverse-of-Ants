@@ -1,156 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Multiverse of Ants</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0">
+    <title>Universe picker</title>
+    <link rel="stylesheet" href="picker.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
 </head>
-<body>
-<canvas id="canvas" width="800" height="600"></canvas>
-<div id="info" style="display: flex">
-    <div style="margin-right: 20px">
-        <p>Ants: <span id="ants">0</span></p>
-        <p>TPS: <span id="tps">0</span></p>
-    </div>
-    <div>
-        <p>State: <span id="state"></span></p>
-        <p>TPS History: <span id="tps-history" style="overflow: auto"></span></p>
+
+<body style="background: black;">
+<canvas id="canvas" style="background: black;"></canvas>
+<div id="input-container" class="card shadow-lg border-0" data-bs-theme="dark">
+    <div class="card-body">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Seed" aria-label="Seed" id="seed-input"
+                   style="background-color: rgb(78 78 78 / 50%);">
+            <button class="btn btn-light" type="button" id="seed-button">Go</button>
+        </div>
     </div>
 </div>
-<button onclick="window.location.reload()" style="position: absolute; margin: 10px; right: 0; top: 0">Reload</button>
+<div id="corner-text">
+    Code for background picker by <a href="https://codepen.io/AndrisJefimovs" target="_blank">Andris Jefimovs</a>
+</div>
+<script src="picker.js"></script>
 </body>
-<script>
-    const websocket = new WebSocket("ws://localhost:8765");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const centerX = 0
-    const centerY = 0
-
-    let entities = {};
-    let nests = [];
-    let objects = [];
-
-    let objectTypeColors = {
-        "FOOD": "green",
-        "WATER": "blue",
-        "ROCK": "gray"
-    };
-
-    let tps_goal = 0;
-
-    let SCALE = 4;
-
-    websocket.onopen = function (event) {
-        console.log("Connection established");
-        websocket.send(JSON.stringify({
-            type: "SIMULATION_START"
-        }));
-    };
-
-    websocket.onerror = function (event) {
-        document.getElementById("state").innerText = "Connection failed";
-    };
-
-    websocket.onmessage = function (event) {
-        console.log(event.data);
-        const data = JSON.parse(event.data);
-        if (data.type === "ANT_MOVE") {
-            if (entities[data.ant.id]) {
-                ctx.translate(centerX + entities[data.ant.id].position.x * SCALE + SCALE / 2, centerY + entities[data.ant.id].position.y * SCALE + SCALE / 2);
-                ctx.rotate(entities[data.ant.id].position.direction * Math.PI / 180);
-                if (checkIfEntityIsInNest(entities[data.ant.id])) {
-                    ctx.clearRect(
-                        Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
-                    );
-                    ctx.fillStyle = "lightgray";
-                    ctx.fillRect(
-                        Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
-                    );
-                } else {
-                    ctx.clearRect(
-                        Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
-                    );
-                }
-                ctx.resetTransform();
-            } else {
-                document.getElementById("ants").innerText = (Object.keys(entities).length + 1).toString();
-            }
-            entities[data.ant.id] = data.ant;
-            ctx.translate(centerX + data.ant.position.x * SCALE + SCALE / 2, centerY + data.ant.position.y * SCALE + SCALE / 2);
-            ctx.rotate(data.ant.position.direction * Math.PI / 180);
-            ctx.fillStyle = data.ant.role !== "QUEEN" ? data.ant.color : "gold";
-            ctx.fillRect(Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE));
-            ctx.resetTransform();
-        } else if (data.type === "ANT_DEATH") {
-            ctx.translate(centerX + entities[data.ant.id].position.x * SCALE + SCALE / 2, centerY + entities[data.ant.id].position.y * SCALE + SCALE / 2);
-            ctx.rotate(entities[data.ant.id].position.direction * Math.PI / 180);
-            if (checkIfEntityIsInNest(entities[data.ant.id])) {
-                ctx.clearRect(
-                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
-                );
-                ctx.fillStyle = "lightgray";
-                ctx.fillRect(
-                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
-                );
-            } else {
-                ctx.clearRect(
-                    Math.floor(-SCALE / 4), Math.floor(-SCALE / 2), Math.floor(SCALE / 2), Math.floor(SCALE)
-                );
-            }
-            ctx.resetTransform();
-            delete entities[data.ant.id];
-            document.getElementById("ants").innerText = Object.keys(entities).length.toString();
-        } else if (data.type === "SIMULATION_TPS") {
-            document.getElementById("tps").innerText = data.state;
-            if (data.state < tps_goal) {
-                document.getElementById("tps-history").innerText += data.state + ", ";
-            }
-        } else if (data.type === "SIMULATION_SET_TPS") {
-            tps_goal = data.state;
-        } else if (data.type === "SIMULATION_START") {
-            document.getElementById("state").innerText = "Running";
-        } else if (data.type === "SIMULATION_END") {
-            document.getElementById("state").innerText = "Finished";
-        } else if (data.type === "NEST_SPAWN") {
-            nests.push(data.target);
-            ctx.fillStyle = "lightgray"
-            ctx.fillRect(centerX + data.target.area.position_1.x * SCALE, centerY + data.target.area.position_1.y * SCALE, data.target.area.width * SCALE, data.target.area.height * SCALE);
-        } else if (data.type === "OBJECT_SPAWN") {
-            objects.push(data.target);
-            ctx.fillStyle = objectTypeColors[data.target.type];
-            ctx.fillRect(centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2));
-        } else if (data.type === "OBJECT_DESPAWN") {
-            for (let i = 0; i < objects.length; i++) {
-                if (objects[i].id === data.target.id) {
-                    objects.splice(i, 1);
-                    break;
-                }
-            }
-            if (checkIfEntityIsInNest(data.target)) {
-                ctx.clearRect(
-                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2)
-                );
-                ctx.fillStyle = "lightgray";
-                ctx.fillRect(
-                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2)
-                );
-            } else {
-                ctx.clearRect(
-                    centerX + data.target.position.x * SCALE, centerY + data.target.position.y * SCALE, Math.floor(SCALE / 2), Math.floor(SCALE / 2)
-                );
-            }
-        }
-
-    };
-
-
-    function checkIfEntityIsInNest(entity) {
-        for (let i = 0; i < nests.length; i++) {
-            if (entity.position.x >= nests[i].area.position_1.x && entity.position.x <= nests[i].area.position_2.x && entity.position.y >= nests[i].area.position_1.y && entity.position.y <= nests[i].area.position_2.y) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-</script>
-</html>

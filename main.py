@@ -11,14 +11,15 @@ from universe.ants import Ant
 from universe.engine import run
 from universe.update import Update, UpdateType
 
+HTTP_PORT = 80
+
 
 def start_http_server():
-    PORT = 80
-    Handler = http.server.SimpleHTTPRequestHandler
+    http_handler = http.server.SimpleHTTPRequestHandler
 
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    with socketserver.TCPServer(("", HTTP_PORT), http_handler) as httpd:
         print(
-            f"Serving HTTP server at port {PORT} - http://localhost:{PORT} for local deployment"
+            f"Serving HTTP server at port {HTTP_PORT} - http://localhost:{HTTP_PORT} for local deployment"
         )
         httpd.serve_forever()
 

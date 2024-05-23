@@ -71,7 +71,7 @@ class Area:
             return self.center().euclidean_distance(other)
         return self.center().euclidean_distance(other.center())
 
-    def direction_from_position(self, position: Position) -> Direction:
+    def direction_from_position(self, position: Position) -> Union[Direction, None]:
         """
         Determine the direction from a position to the area.
 
