@@ -5,6 +5,11 @@
     scroll-behavior: none;
 }
 
+html {
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+
 #canvas {
     display: block;
     z-index: 0;
