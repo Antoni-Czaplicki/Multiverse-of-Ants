@@ -64,12 +64,12 @@ class Nest:
         for _ in range(10):
             position_1 = Position(
                 universe.rng.randint(
-                    universe.boundary.x,
-                    universe.boundary.x + universe.boundary.width - size_to,
+                    universe.boundary.position_1.x,
+                    universe.boundary.position_2.x - size_to,
                 ),
                 universe.rng.randint(
-                    universe.boundary.y,
-                    universe.boundary.y + universe.boundary.height - size_to,
+                    universe.boundary.position_1.y,
+                    universe.boundary.position_2.y - size_to,
                 ),
             )
             position_2 = Position(

@@ -1,6 +1,5 @@
-
-html, body {
-    /*overflow-y: hidden; !* Hide vertical scrollbar *!*/
+:root {
+  color-scheme: dark;
 }
 
 body {

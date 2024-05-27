@@ -1,9 +1,10 @@
 import enum
 import math
 from functools import cache
-from typing import Tuple
+from typing import TYPE_CHECKING, Tuple
 
-from universe.map.boundary import Boundary
+if TYPE_CHECKING:
+    from .boundary import Boundary
 
 
 class Direction(enum.Enum):
@@ -100,27 +101,23 @@ class Position:
 
     @cache
     def calculate_new_position(
-        self, boundary: Boundary, direction: Direction, distance: int = 1
+        self, boundary: "Boundary", direction: Direction, distance: int = 1
     ) -> "Position":
         """Calculate a new position based on a direction and distance."""
         if direction == Direction.NORTH:
-            return Position(
-                self.x, min(self.y + distance, boundary.y + boundary.height - 1)
-            )
+            return Position(self.x, min(self.y + distance, boundary.position_2.y))
         elif direction == Direction.EAST:
-            return Position(
-                min(self.x + distance, boundary.x + boundary.width - 1), self.y
-            )
+            return Position(min(self.x + distance, boundary.position_2.x), self.y)
         elif direction == Direction.SOUTH:
-            return Position(self.x, max(self.y - distance, boundary.y))
+            return Position(self.x, max(self.y - distance, boundary.position_1.y))
         elif direction == Direction.WEST:
-            return Position(max(self.x - distance, boundary.x), self.y)
+            return Position(max(self.x - distance, boundary.position_1.x), self.y)
         else:
             raise ValueError(f"Invalid direction: {direction}")
 
     def move(
         self,
-        boundary: Boundary,
+        boundary: "Boundary",
         direction: Direction = None,
         distance: int = 1,
         new_position: "Position" = None,
@@ -142,7 +139,7 @@ class Position:
             raise ValueError(f"Out of boundary: {new_position}")
 
     def can_move(
-        self, boundary: Boundary, direction: Direction, distance: int = 1
+        self, boundary: "Boundary", direction: Direction, distance: int = 1
     ) -> bool:
         """Check if the position can move in a direction."""
         return boundary.contains(

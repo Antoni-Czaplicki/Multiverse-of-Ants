@@ -1,8 +1,13 @@
-class Boundary:
-    x: int = 0
-    y: int = 0
+from .area import Area
+from .position import Position
+
+
+class Boundary(Area):
     width: int = 200
     height: int = 200
+
+    def __init__(self):
+        super().__init__(Position(0, 0), Position(200, 200))
 
     def set_boundary(self, x: int, y: int, width: int, height: int) -> None:
         """
@@ -13,8 +18,8 @@ class Boundary:
         :param width: The width of the boundary.
         :param height: The height of the boundary.
         """
-        self.x = x
-        self.y = y
+        self.position_1 = Position(x, y)
+        self.position_2 = Position(x + width, y + height)
         self.width = width
         self.height = height
 
@@ -25,8 +30,8 @@ class Boundary:
         :param width: The width of the boundary.
         :param height: The height of the boundary.
         """
-        self.x = 0
-        self.y = 0
+        self.position_1 = Position(0, 0)
+        self.position_2 = Position(width, height)
         self.width = width
         self.height = height
 
@@ -37,8 +42,8 @@ class Boundary:
 
         :param size: The size to set the boundary.
         """
-        self.x = 0
-        self.y = 0
+        self.position_1 = Position(0, 0)
+        self.position_2 = Position(size, size)
         self.width = size
         self.height = size
 
@@ -49,10 +54,7 @@ class Boundary:
         :param position: The position to check.
         :return: True if the position is within the boundary, False otherwise.
         """
-        return (
-            self.x <= position.x <= self.x + self.width
-            and self.y <= position.y <= self.y + self.height
-        )
+        return super().__contains__(position)
 
     def size(self) -> int:
         """

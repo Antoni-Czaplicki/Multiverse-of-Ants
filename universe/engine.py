@@ -25,8 +25,8 @@ PAUSE = 1 / TPS if TPS > 0 else 0
 
 
 def print_map(ants, boundary) -> None:
-    for y in range(boundary.y, boundary.y + boundary.height):
-        for x in range(boundary.x, boundary.x + boundary.width):
+    for y in range(boundary.position_1.y, boundary.position_2.y):
+        for x in range(boundary.position_1.x, boundary.position_2.x):
             ant = None
             on_color = None
             for e in ants:
@@ -63,10 +63,10 @@ async def create_ant(
     new_ant = ant_type(
         Position(
             universe.rng.randint(
-                universe.boundary.x, universe.boundary.x + universe.boundary.width
+                universe.boundary.position_1.x, universe.boundary.position_2.x
             ),
             universe.rng.randint(
-                universe.boundary.y, universe.boundary.y + universe.boundary.height
+                universe.boundary.position_1.y, universe.boundary.position_2.y
             ),
             universe.rng.choice(list(Direction)),
         )
@@ -81,10 +81,10 @@ async def create_random_object(universe: Universe, update_callback: Callable) ->
     new_object = Object(
         Position(
             universe.rng.randint(
-                universe.boundary.x, universe.boundary.x + universe.boundary.width
+                universe.boundary.position_1.x, universe.boundary.position_2.x
             ),
             universe.rng.randint(
-                universe.boundary.y, universe.boundary.y + universe.boundary.height
+                universe.boundary.position_1.y, universe.boundary.position_2.y
             ),
         ),
         universe.rng.choice(
@@ -161,7 +161,7 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
         universe.boundary.set_boundary_by_size(SIZE)
         print("Setting default boundary")
     print(
-        f"universe.boundary: \n-x: {universe.boundary.x}\n-y: {universe.boundary.y}\nx: {universe.boundary.x + universe.boundary.width}\ny: {universe.boundary.y + universe.boundary.height}\n"
+        f"universe.boundary: \n-x: {universe.boundary.position_1.x}\n-y: {universe.boundary.position_1.y}\nx: {universe.boundary.position_2.x}\ny: {universe.boundary.position_2.y}\n"
     )
 
     await initial_spawn(universe, update_callback)

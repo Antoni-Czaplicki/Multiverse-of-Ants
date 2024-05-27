@@ -19,7 +19,8 @@
 <button onclick="window.location.reload()" style="position: absolute; margin: 10px; right: 0; top: 0">Reload</button>
 </body>
 <script>
-    const websocket = new WebSocket("ws://localhost:8765");
+    let host = window.location.hostname;
+    const websocket = new WebSocket(`ws://${host}:8765`);
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const centerX = 0

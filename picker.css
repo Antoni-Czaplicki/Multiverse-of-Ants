@@ -5,6 +5,10 @@
     scroll-behavior: none;
 }
 
+:root {
+  color-scheme: dark;
+}
+
 html {
     overflow: hidden;
     overscroll-behavior: none;
