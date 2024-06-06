@@ -64,4 +64,36 @@ canvas {
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
     cursor: default;
+    z-index: 100;
+}
+
+input[type=number] {
+  width: 5rem;
+  padding: 0.5em;
+  border: 0.2em solid #E91E63;
+  border-radius: 1em;
+  text-align: center;
+  color: #E91E63;
+  -webkit-appearance: textfield;
+     -moz-appearance: textfield;
+          appearance: textfield;
+  margin: 0;
+}
+input[type=number]::-webkit-inner-spin-button {
+  opacity: 1;
+  background: red;
+}
+
+#nest-canvas {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0; /* Ensure it is in the background */
+    width: calc(100% - 2.5rem);
+    height: calc(100% - 2.5rem);
+}
+
+#canvas {
+    z-index: 1; /* Ensure it is above the nest canvas */
+    width: 100%;
+    height: 100%;
 }

@@ -12,47 +12,48 @@ from universe.map.position import Direction, Position
 from universe.universe import Universe
 from universe.update import UpdateType
 
-SIZE = 150
+DEFAULT_SIZE = 150
 
-ROUNDS = 200
+DEFAULT_ROUNDS = 200
 
 ANTS = 150
 OBJECTS = 150
 
-TPS = 20
-
-PAUSE = 1 / TPS if TPS > 0 else 0
+DEFAULT_TPS = 20
 
 
 def print_map(ants, boundary) -> None:
-    for y in range(boundary.position_1.y, boundary.position_2.y):
-        for x in range(boundary.position_1.x, boundary.position_2.x):
-            ant = None
-            on_color = None
-            for e in ants:
-                if e.position.x == x and e.position.y == y:
-                    if ant is not None:
-                        on_color = "on_yellow"
-                    ant = e
-            if ant is not None:
-                color = {
-                    BlackAnt: "blue",
-                    RedAnt: "red",
-                }[type(ant)]
-                print(
-                    colored(
-                        ant.position.direction.to_arrow(),
-                        color=color,  # type: ignore
-                        on_color=on_color,
-                        force_color=True,
-                    ),
-                    end=" ",
-                )
-                ant = None
-                on_color = None
-            else:
-                print("_", end=" ")
-        print()
+    width = boundary.width
+    height = boundary.height
+
+    grid = [["_" for _ in range(width)] for _ in range(height)]
+
+    color_map = {
+        BlackAnt: "blue",
+        RedAnt: "red",
+    }
+
+    for ant in ants:
+        x, y = (
+            ant.position.x - boundary.position_1.x,
+            ant.position.y - boundary.position_1.y,
+        )
+        if grid[y][x] == "_":
+            grid[y][x] = colored(
+                ant.position.direction.to_arrow(),
+                color=color_map[type(ant)],
+                force_color=True,
+            )
+        else:
+            grid[y][x] = colored(
+                ant.position.direction.to_arrow(),
+                color=color_map[type(ant)],
+                on_color="on_yellow",
+                force_color=True,
+            )
+
+    for row in grid:
+        print("".join(row))
     print("\n")
 
 
@@ -145,6 +146,9 @@ async def initial_spawn(
 
 async def run(config, update_callback: Optional[Callable] = None) -> None:
     """Run the simulation."""
+    tps = config.get("tps", DEFAULT_TPS)
+    pause = 1 / tps if tps > 0 else 0
+    rounds = config.get("rounds", DEFAULT_ROUNDS)
     universe = Universe()
 
     await update_callback(UpdateType.SIMULATION_START)
@@ -158,7 +162,7 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
             config["boundary"]["width"], config["boundary"]["height"]
         )
     else:
-        universe.boundary.set_boundary_by_size(SIZE)
+        universe.boundary.set_boundary_by_size(DEFAULT_SIZE)
         print("Setting default boundary")
     print(
         f"universe.boundary: \n-x: {universe.boundary.position_1.x}\n-y: {universe.boundary.position_1.y}\nx: {universe.boundary.position_2.x}\ny: {universe.boundary.position_2.y}\n"
@@ -166,13 +170,22 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
 
     await initial_spawn(universe, update_callback)
 
-    await update_callback(UpdateType.SIMULATION_SET_TPS, state=TPS)
+    await update_callback(UpdateType.SIMULATION_SET_TPS, state=tps)
     last_timestamp = datetime.now()
 
-    for i in range(ROUNDS):
+    current_round = 1
+
+    while rounds >= current_round:
         while config.get("pause", False):
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
             last_timestamp = datetime.now()
+        if "tps" in config and config.get("tps", 20) != tps:
+            tps = config.get("tps", 20)
+            pause = 1 / tps if tps > 0 else 0
+        if "rounds" in config and config.get("rounds", 200) != rounds:
+            rounds = config.get("rounds", 200)
+
+        await update_callback(UpdateType.SIMULATION_CURRENT_ROUND, state=current_round)
 
         for ant_row in list(universe.ants.values()):
             for ant in ant_row:
@@ -198,19 +211,25 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
             if (datetime.now() - last_timestamp).total_seconds() > 0
             else 0
         )
-        if temp_tps == 0 or temp_tps > TPS:
-            temp_tps = TPS
+        if temp_tps == 0 or temp_tps > tps:
+            temp_tps = tps
         await update_callback(UpdateType.SIMULATION_TPS, state=temp_tps)
         pause_time = (
-            PAUSE - (datetime.now() - last_timestamp).total_seconds()
-            if PAUSE - (datetime.now() - last_timestamp).total_seconds() > 0
+            pause - (datetime.now() - last_timestamp).total_seconds()
+            if pause - (datetime.now() - last_timestamp).total_seconds() > 0
             else 0
         )
         if pause_time > 0:
             await asyncio.sleep(pause_time)
         last_timestamp = datetime.now()
 
-        # print_map([ant for ant_row in universe.ants.values() for ant in ant_row], universe.boundary)
+        if config.get("console_map", False):
+            print_map(
+                [ant for ant_row in universe.ants.values() for ant in ant_row],
+                universe.boundary,
+            )
+
+        current_round += 1
 
     print("Game over!")
     await update_callback(UpdateType.SIMULATION_END)

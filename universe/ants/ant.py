@@ -1,7 +1,8 @@
 import enum
+from abc import abstractmethod
 from typing import TYPE_CHECKING, Callable, List
 
-from universe.map import Direction, Object, ObjectType, Position
+from universe.map import Direction, Object, Position
 from universe.update import UpdateType
 
 if TYPE_CHECKING:
@@ -19,8 +20,8 @@ class Ant:
     NEXT_ID = 0
 
     role: Role = Role.WORKER
-    health = 30
-    food = 50
+    health = 50
+    food = 60
     damage = 10
     speed = 3
     position: Position = None
@@ -41,102 +42,11 @@ class Ant:
             if self.position.can_move(boundary, direction)
         ]
 
-    async def move(
-        self,
-        universe: "Universe",
-        update_callback: Callable,
-    ) -> None:
-        available_directions = self.available_directions(universe.boundary)
-        if available_directions:
-            # Combine direction and distance into a single choice
-            direction_distance = [
-                {
-                    "direction": universe.rng.choice(available_directions),
-                    "distance": universe.rng.randint(0, self.speed),
-                }
-            ]
+    @abstractmethod
+    async def move(self, universe: "Universe", update_callback: Callable):
+        pass
 
-            # Call get_entity_positions once and store its result
-            # entity_positions = self.get_other_entity_positions(ants)
-
-            # Use the stored entity_positions in the list comprehension
-            proposed_positions = [
-                {"new_position": position}
-                for position in self.position.get_neighbors(self.speed)
-                if (
-                    (position.x, position.y) in universe.ants
-                    and any(
-                        type(ant) is not type(self)
-                        for ant in universe.ants[(position.x, position.y)]
-                    )
-                )
-                or (
-                    (position.x, position.y) in universe.objects
-                    and universe.objects[(position.x, position.y)]
-                    and universe.objects[(position.x, position.y)][0].object_type
-                    is not ObjectType.ROCK
-                )
-            ]
-
-            if self.role == Role.QUEEN:
-                nearest_nest = min(
-                    universe.nests,
-                    key=lambda nest: nest.area.smallest_distance(self.position),
-                )
-                direction_to_nest = nearest_nest.area.direction_from_position(
-                    self.position
-                )
-                if (
-                    direction_to_nest is not None
-                    and self.position not in nearest_nest.area
-                ):
-                    distance_to_nest = nearest_nest.area.smallest_distance(
-                        self.position
-                    )
-                    direction_distance.append(
-                        {
-                            "direction": direction_to_nest,
-                            "distance": min(abs(distance_to_nest), self.speed),
-                        }
-                    )
-                    direction_distance.append(
-                        {
-                            "direction": direction_to_nest,
-                            "distance": min(abs(distance_to_nest), self.speed),
-                        }
-                    )
-                    direction_distance.append(
-                        {
-                            "direction": direction_to_nest,
-                            "distance": min(abs(distance_to_nest), self.speed),
-                        }
-                    )
-                    direction_distance.append(
-                        {
-                            "direction": direction_to_nest,
-                            "distance": min(abs(distance_to_nest), self.speed),
-                        }
-                    )
-                    direction_distance.append(
-                        {
-                            "direction": direction_to_nest,
-                            "distance": min(abs(distance_to_nest), self.speed),
-                        }
-                    )
-            chosen_move = universe.rng.choice(
-                direction_distance + proposed_positions * 2
-            )  # Double the weight of proposed_positions
-            self.position.move(universe.boundary, **chosen_move)
-            if self.food > 0:
-                self.food -= 1
-            else:
-                self.health -= 1
-                if self.health <= 0:
-                    await self.die(update_callback)
-                    return  # When the ant dies, it should not move
-            await update_callback(UpdateType.ANT_MOVE, self)
-
-    async def promote(self, update_callback):
+    async def promote(self, update_callback, silent=False):
         if self.role == Role.WORKER:
             self.role = Role.SOLDIER
             self.health = round(self.health * 1.5)
@@ -149,7 +59,8 @@ class Ant:
             self.speed = 2
         else:
             raise ValueError("Cannot promote a queen")
-        await update_callback(UpdateType.ANT_PROMOTE, self)
+        if not silent:
+            await update_callback(UpdateType.ANT_PROMOTE, self)
 
     async def set_role(self, role, update_callback):
         self.role = role
@@ -196,6 +107,23 @@ class Ant:
                         universe.boundary, direction, 1
                     )
                     new_ant = type(self)(new_position)
+                    if universe.rng.random() < 0.05:
+                        await new_ant.promote(update_callback, silent=True)
+                        if universe.rng.random() < 0.02:
+                            neighbors_20 = self.position.get_neighbors(5)
+                            same_color_queen_in_20_count = len(
+                                [
+                                    ant
+                                    for position in neighbors_20
+                                    for ant in universe.ants.get(
+                                        (position.x, position.y), []
+                                    )
+                                    if type(ant) is type(self)
+                                ]
+                            )
+                            if same_color_queen_in_20_count < 3:
+                                await new_ant.promote(update_callback, silent=True)
+
                     universe.ants[(new_ant.position.x, new_ant.position.y)].append(
                         new_ant
                     )
@@ -246,7 +174,7 @@ class Ant:
             for nest in universe.nests:
                 if self.position in nest.area:
                     if self.food < 10:
-                        self.food += 1
+                        self.food += 2
                     if self.health < 90:
                         self.health += 3
                     neighbors_5 = self.position.get_neighbors(5)

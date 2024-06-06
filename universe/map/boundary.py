@@ -7,7 +7,7 @@ class Boundary(Area):
     height: int = 200
 
     def __init__(self):
-        super().__init__(Position(0, 0), Position(200, 200))
+        super().__init__(Position(0, 0), Position(199, 199))
 
     def set_boundary(self, x: int, y: int, width: int, height: int) -> None:
         """
@@ -19,7 +19,7 @@ class Boundary(Area):
         :param height: The height of the boundary.
         """
         self.position_1 = Position(x, y)
-        self.position_2 = Position(x + width, y + height)
+        self.position_2 = Position(x + width - 1, y + height - 1)
         self.width = width
         self.height = height
 
@@ -31,7 +31,7 @@ class Boundary(Area):
         :param height: The height of the boundary.
         """
         self.position_1 = Position(0, 0)
-        self.position_2 = Position(width, height)
+        self.position_2 = Position(width - 1, height - 1)
         self.width = width
         self.height = height
 
@@ -43,7 +43,7 @@ class Boundary(Area):
         :param size: The size to set the boundary.
         """
         self.position_1 = Position(0, 0)
-        self.position_2 = Position(size, size)
+        self.position_2 = Position(size - 1, size - 1)
         self.width = size
         self.height = size
 
