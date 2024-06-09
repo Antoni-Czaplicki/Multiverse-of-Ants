@@ -9,6 +9,10 @@ if TYPE_CHECKING:
 
 
 class Nest:
+    """
+    Class representing a nest in the universe.
+    """
+
     ants_per_unit_area: int = 5
     queen: "Ant" = None
 

@@ -9,7 +9,7 @@ class Boundary(Area):
     def __init__(self):
         super().__init__(Position(0, 0), Position(199, 199))
 
-    def set_boundary(self, x: int, y: int, width: int, height: int) -> None:
+    def __set_boundary(self, x: int, y: int, width: int, height: int) -> None:
         """
         Set the boundary with the given x, y, width, and height.
 

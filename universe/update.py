@@ -6,6 +6,8 @@ if TYPE_CHECKING:
 
 
 class UpdateType(enum.Enum):
+    """Enum class for update types."""
+
     UNKNOWN = -1
     SIMULATION_START = 0
     SIMULATION_END = 1

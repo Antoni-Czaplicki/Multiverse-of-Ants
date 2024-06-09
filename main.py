@@ -17,6 +17,7 @@ HTTP_PORT = 80
 
 
 def start_http_server():
+    """Start a simple HTTP server to serve the frontend."""
     http_handler = http.server.SimpleHTTPRequestHandler
 
     with socketserver.TCPServer(("", HTTP_PORT), http_handler) as httpd:
@@ -27,11 +28,13 @@ def start_http_server():
 
 
 async def handler(websocket):
+    """Handle the websocket connection."""
     running_task = None
 
     async def callback(
         update_type: UpdateType, entity: Ant | None = None, target=None, state=None
     ):
+        """Send the update to the client."""
         event = Update(update_type, entity, target, state).to_dict()
         try:
             await websocket.send(json.dumps(event))
@@ -107,6 +110,7 @@ async def handler(websocket):
 
 # This is a dummy function that does nothing and is used to replace the update_callback in the run function
 async def do_nothing(*args, **kwargs):
+    """Do nothing."""
     pass
 
 
@@ -114,6 +118,7 @@ executor = ThreadPoolExecutor(max_workers=1)
 
 
 def run_simulation(running_task, config):
+    """Run the simulation."""
     if running_task:
         print("Canceling running simulation")
         running_task.cancel()
@@ -122,12 +127,14 @@ def run_simulation(running_task, config):
 
 
 def stop_simulation(running_task):
+    """Stop the simulation."""
     if running_task:
         print("Canceling running simulation")
         running_task.cancel()
 
 
 def start_console_mode():
+    """Start the console mode."""
     print("Console mode started")
     keyboard.remove_hotkey("ctrl+shift+w")
     running_task = None
@@ -144,12 +151,16 @@ def start_console_mode():
 
 
 async def start_servers():
+    """Start the HTTP and WebSocket servers."""
     http_thread = threading.Thread(target=start_http_server, daemon=True)
     try:
         http_thread.start()
         print("Connect to ws://localhost:8765")
         # Allow to start the simulation without opening the browser
-        keyboard.add_hotkey("ctrl+shift+w", start_console_mode)
+        # try:
+        #     keyboard.add_hotkey("ctrl+shift+w", start_console_mode)
+        # except OSError:
+        #     print("Cannot start console mode, please run the application as an administrator")
         async with serve(handler, "0.0.0.0", 8765):
             await asyncio.Future()  # run forever
     except asyncio.CancelledError:

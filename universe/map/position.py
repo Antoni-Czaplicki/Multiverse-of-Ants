@@ -97,6 +97,7 @@ class Position:
         ]
 
     def direction_to(self, other):
+        """Get the direction to another position."""
         return (other - self).normalize()
 
     @cache
