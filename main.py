@@ -3,7 +3,6 @@ import http.server
 import json
 import socketserver
 import threading
-import csv
 from concurrent.futures import ThreadPoolExecutor
 
 import keyboard
@@ -152,7 +151,6 @@ async def start_servers():
         # Allow to start the simulation without opening the browser
         keyboard.add_hotkey("ctrl+shift+w", start_console_mode)
         async with serve(handler, "0.0.0.0", 8765):
-            asyncio.create_task(periodic_save(Ant.all_ants, 'simulation_data.csv', 1))
             await asyncio.Future()  # run forever
     except asyncio.CancelledError:
         print("Server stopped")
@@ -161,26 +159,6 @@ async def start_servers():
         print("Application will restart in 5 seconds")
         await asyncio.sleep(5)
         await start_servers()
-
-
-def save_to_csv(simulation_data, filename):
-    headers = ['id', 'role', 'health', 'damage', 'speed', 'position', 'alive']
-
-    with open(filename, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-
-        writer.writerow(headers)
-
-        for data in simulation_data:
-            writer.writerow([data.id, data.role.name, data.health, data.damage, data.speed, data.position.to_dict(), data.alive])
-
-
-async def periodic_save(simulation_data, filename, interval):
-    with open('statistics.csv', 'w') as file:
-        file.truncate(0)
-    while True:
-        save_to_csv(simulation_data, filename)
-        await asyncio.sleep(interval)
 
 
 asyncio.run(start_servers())
