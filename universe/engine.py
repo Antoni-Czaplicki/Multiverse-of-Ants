@@ -23,7 +23,8 @@ OBJECTS = 150
 DEFAULT_TPS = 20
 
 
-def print_map(ants, boundary) -> None:
+def __print_map(ants, boundary) -> None:
+    """Print the map of the universe."""
     width = boundary.width
     height = boundary.height
 
@@ -58,6 +59,7 @@ def print_map(ants, boundary) -> None:
     print("\n")
 
 
+
 async def create_ant(
         ant_type: type, universe: Universe, update_callback: Callable
 ) -> None:
@@ -78,7 +80,7 @@ async def create_ant(
     await update_callback(UpdateType.ANT_SPAWN, new_ant)
 
 
-async def create_random_object(universe: Universe, update_callback: Callable) -> None:
+async def __create_random_object(universe: Universe, update_callback: Callable) -> None:
     """Helper function to create an object and append it to objects list."""
     new_object = Object(
         Position(
@@ -98,6 +100,7 @@ async def create_random_object(universe: Universe, update_callback: Callable) ->
     await update_callback(UpdateType.OBJECT_SPAWN, target=new_object)
 
 
+
 async def initial_spawn(
         universe: Universe,
         update_callback: Callable,
@@ -106,9 +109,9 @@ async def initial_spawn(
     for _ in range(
             universe.rng.randint(100, max(universe.boundary.size() // 500, 123)) // 3
     ):
-        await create_ant(BlackAnt, universe, update_callback)
-        await create_ant(BlackAnt, universe, update_callback)
-        await create_ant(RedAnt, universe, update_callback)
+        await __create_ant(BlackAnt, universe, update_callback)
+        await __create_ant(BlackAnt, universe, update_callback)
+        await __create_ant(RedAnt, universe, update_callback)
     nest_1 = Nest(Nest.generate_random_nest_area(universe))
     await update_callback(UpdateType.NEST_SPAWN, target=nest_1)
     nest_2 = Nest(
@@ -142,7 +145,7 @@ async def initial_spawn(
     universe.ants[(queen_2.position.x, queen_2.position.y)].append(queen_2)
 
     for _ in range(universe.rng.randint(75, max(universe.boundary.size() // 500, 100))):
-        await create_random_object(universe, update_callback)
+        await __create_random_object(universe, update_callback)
 
 
 async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
@@ -179,7 +182,7 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
         f"universe.boundary: \n-x: {universe.boundary.position_1.x}\n-y: {universe.boundary.position_1.y}\nx: {universe.boundary.position_2.x}\ny: {universe.boundary.position_2.y}\n"
     )
 
-    await initial_spawn(universe, update_callback)
+    await __initial_spawn(universe, update_callback)
 
     await update_callback(UpdateType.SIMULATION_SET_TPS, state=tps)
     last_timestamp = datetime.now()
@@ -224,7 +227,7 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
             for _ in range(
                     universe.rng.randint(0, max(universe.boundary.size() // 2000, 10))
             ):
-                await create_random_object(universe, update_callback)
+                await __create_random_object(universe, update_callback)
 
         temp_tps = round(
             1 / (datetime.now() - last_timestamp).total_seconds()
@@ -244,7 +247,7 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
         last_timestamp = datetime.now()
 
         if config.get("console_map", False):
-            print_map(
+            __print_map(
                 [ant for ant_row in universe.ants.values() for ant in ant_row],
                 universe.boundary,
             )

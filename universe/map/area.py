@@ -47,7 +47,7 @@ class Area:
         """
         return (self.position_2 - self.position_1).manhattan_distance(Position(0, 0))
 
-    def center(self) -> Position:
+    def __center(self) -> Position:
         """
         Calculate the center of the area.
 
@@ -68,8 +68,8 @@ class Area:
         :rtype: float
         """
         if isinstance(other, Position):
-            return self.center().euclidean_distance(other)
-        return self.center().euclidean_distance(other.center())
+            return self.__center().euclidean_distance(other)
+        return self.__center().euclidean_distance(other.__center())
 
     def direction_from_position(self, position: Position) -> Union[Direction, None]:
         """

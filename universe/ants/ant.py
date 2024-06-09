@@ -11,12 +11,16 @@ if TYPE_CHECKING:
 
 
 class Role(enum.Enum):
+    """Enum class for ant roles."""
+
     WORKER = 0
     SOLDIER = 1
     QUEEN = 2
 
 
 class Ant:
+    """Class representing an ant in the universe."""
+
     NEXT_ID = 0
     role: Role = Role.WORKER
     health = 50
@@ -27,14 +31,17 @@ class Ant:
     alive = True
 
     def __init__(self, position: Position):
+        """Initialize the ant."""
         self.id = Ant.NEXT_ID
         Ant.NEXT_ID += 1
         self.position = position
 
     def __str__(self) -> str:
+        """Return the string representation of the ant."""
         return f"({self.position}, {self.role})"
 
     def available_directions(self, boundary: "Boundary") -> List[Direction]:
+        """Return the available directions for the ant to move."""
         return [
             direction
             for direction in Direction
@@ -43,9 +50,11 @@ class Ant:
 
     @abstractmethod
     async def move(self, universe: "Universe", update_callback: Callable):
+        """Move the ant in the universe."""
         pass
 
-    async def promote(self, update_callback, silent=False):
+    async def __promote(self, update_callback, silent=False):
+        """Promote the ant to the next role."""
         if self.role == Role.WORKER:
             self.role = Role.SOLDIER
             self.health = round(self.health * 1.5)
@@ -62,6 +71,7 @@ class Ant:
             await update_callback(UpdateType.ANT_PROMOTE, self)
 
     async def set_role(self, role, update_callback):
+        """Set the role of the ant."""
         self.role = role
         if role == Role.SOLDIER:
             self.health = 45
@@ -75,12 +85,14 @@ class Ant:
         await update_callback(UpdateType.ANT_PROMOTE, self)
 
     async def attack(self, other, update_callback):
+        """Attack another ant."""
         other.health -= self.damage
         await update_callback(UpdateType.ANT_ATTACK, self, other)
         if other.health <= 0:
             await other.die(update_callback)
 
     async def die(self, update_callback):
+        """Kill the ant."""
         self.alive = False
         self.health = 0
         self.food = 0
@@ -89,6 +101,7 @@ class Ant:
         await update_callback(UpdateType.ANT_DEATH, self)
 
     def is_alive(self):
+        """Return whether the ant is alive."""
         return self.alive
 
     async def spawn_ants(
@@ -97,6 +110,7 @@ class Ant:
         max_count: int,
         update_callback: Callable,
     ):
+        """Spawn new ants for the queen."""
         if universe.ants_count < universe.MAX_ANTS:
             for _ in range(
                 universe.rng.choice([universe.rng.randint(0, max_count), 0, 0, 0, 0])
@@ -107,7 +121,7 @@ class Ant:
                     )
                     new_ant = type(self)(new_position)
                     if universe.rng.random() < 0.05:
-                        await new_ant.promote(update_callback, silent=True)
+                        await new_ant.__promote(update_callback, silent=True)
                         if universe.rng.random() < 0.02:
                             neighbors_20 = self.position.get_neighbors(5)
                             same_color_queen_in_20_count = len(
@@ -121,7 +135,7 @@ class Ant:
                                 ]
                             )
                             if same_color_queen_in_20_count < 3:
-                                await new_ant.promote(update_callback, silent=True)
+                                await new_ant.__promote(update_callback, silent=True)
 
                     universe.ants[(new_ant.position.x, new_ant.position.y)].append(
                         new_ant
@@ -134,6 +148,7 @@ class Ant:
         universe: "Universe",
         update_callback: Callable,
     ):
+        """Process the ant."""
         front_position = self.position.calculate_new_position(
             universe.boundary, self.position.direction, 1
         )
@@ -152,9 +167,9 @@ class Ant:
                         await entity.attack(self, update_callback)
                 else:
                     if entity.role == Role.SOLDIER and self.role == Role.WORKER:
-                        await self.promote(update_callback)
+                        await self.__promote(update_callback)
                     elif entity.role == Role.QUEEN and self.role == Role.SOLDIER:
-                        await self.promote(update_callback)
+                        await self.__promote(update_callback)
             elif issubclass(type(entity), Object):
                 await entity.interact(universe.boundary, self, update_callback)
                 if (
@@ -191,6 +206,7 @@ class Ant:
                     break
 
     def to_dict(self):
+        """Return a dictionary representation of the ant."""
         return {
             "id": self.id,
             "role": self.role.name,

@@ -7,6 +7,8 @@ from .rng import RNG
 
 
 class Universe:
+    """Class representing the universe."""
+
     rng: RNG
     boundary: Boundary
     ants: Dict[Tuple[int, int], List[Ant]]
@@ -19,6 +21,7 @@ class Universe:
     objects_count = 0
 
     def __init__(self):
+        """Initialize the universe."""
         self.rng = RNG()
         self.boundary = Boundary()
         self.ants = defaultdict(list)

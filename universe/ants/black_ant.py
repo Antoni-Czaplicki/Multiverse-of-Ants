@@ -18,6 +18,12 @@ class BlackAnt(Ant):
         universe: "Universe",
         update_callback: Callable,
     ) -> None:
+        """
+        Move the black ant in the universe.
+        :param universe:
+        :param update_callback:
+        :return:
+        """
         available_directions = self.available_directions(universe.boundary)
         if available_directions:
             # Combine direction and distance into a single choice
