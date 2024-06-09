@@ -18,7 +18,6 @@ class Role(enum.Enum):
 
 class Ant:
     NEXT_ID = 0
-
     role: Role = Role.WORKER
     health = 50
     food = 60

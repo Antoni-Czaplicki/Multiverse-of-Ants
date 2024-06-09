@@ -11,6 +11,7 @@ from universe.map.object import Object, ObjectType
 from universe.map.position import Direction, Position
 from universe.universe import Universe
 from universe.update import UpdateType
+from universe.utils import save_statistics_to_csv
 
 DEFAULT_SIZE = 150
 
@@ -185,6 +186,15 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
         if "rounds" in config and config.get("rounds", 200) != rounds:
             rounds = config.get("rounds", 200)
 
+        if current_round % 20 == 0:
+            save_statistics_to_csv(
+                [ant for ant_row in universe.ants.values() for ant in ant_row],
+                "statistics.csv",
+                current_round,
+            )
+        while config.get("pause", False):
+            await asyncio.sleep(1)
+            last_timestamp = datetime.now()
         await update_callback(UpdateType.SIMULATION_CURRENT_ROUND, state=current_round)
 
         for ant_row in list(universe.ants.values()):
