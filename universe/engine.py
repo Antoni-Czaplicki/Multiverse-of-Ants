@@ -59,7 +59,7 @@ def print_map(ants, boundary) -> None:
 
 
 async def create_ant(
-    ant_type: type, universe: Universe, update_callback: Callable
+        ant_type: type, universe: Universe, update_callback: Callable
 ) -> None:
     """Helper function to create an ant and append it to ants list."""
     new_ant = ant_type(
@@ -99,12 +99,12 @@ async def create_random_object(universe: Universe, update_callback: Callable) ->
 
 
 async def initial_spawn(
-    universe: Universe,
-    update_callback: Callable,
+        universe: Universe,
+        update_callback: Callable,
 ) -> None:
     """Initial spawn of ants, nests and objects in the universe."""
     for _ in range(
-        universe.rng.randint(100, max(universe.boundary.size() // 500, 123)) // 3
+            universe.rng.randint(100, max(universe.boundary.size() // 500, 123)) // 3
     ):
         await create_ant(BlackAnt, universe, update_callback)
         await create_ant(BlackAnt, universe, update_callback)
@@ -145,8 +145,18 @@ async def initial_spawn(
         await create_random_object(universe, update_callback)
 
 
-async def run(config, update_callback: Optional[Callable] = None) -> None:
-    """Run the simulation."""
+async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
+    """
+    Run the simulation.
+
+    Args:
+        config: Configuration for the simulation.
+        update_callback: Callback function to update the frontend.
+
+    Returns:
+        int: Next random number for the simulation.
+    """
+
     tps = config.get("tps", DEFAULT_TPS)
     pause = 1 / tps if tps > 0 else 0
     rounds = config.get("rounds", DEFAULT_ROUNDS)
@@ -155,9 +165,9 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
     await update_callback(UpdateType.SIMULATION_START)
     universe.rng.set_seed(config.get("seed", "0"))
     if (
-        "boundary" in config
-        and "width" in config["boundary"]
-        and "height" in config["boundary"]
+            "boundary" in config
+            and "width" in config["boundary"]
+            and "height" in config["boundary"]
     ):
         universe.boundary.set_boundary_by_width_height(
             config["boundary"]["width"], config["boundary"]["height"]
@@ -204,15 +214,15 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
                 if ant.is_alive():
                     await ant.process(universe, update_callback)
                 if (
-                    not ant.is_alive()
-                    and ant in universe.ants[(ant.position.x, ant.position.y)]
+                        not ant.is_alive()
+                        and ant in universe.ants[(ant.position.x, ant.position.y)]
                 ):
                     universe.ants[(ant.position.x, ant.position.y)].remove(ant)
                     universe.ants_count -= 1
 
         if universe.objects_count < universe.MAX_OBJECTS:
             for _ in range(
-                universe.rng.randint(0, max(universe.boundary.size() // 2000, 10))
+                    universe.rng.randint(0, max(universe.boundary.size() // 2000, 10))
             ):
                 await create_random_object(universe, update_callback)
 
@@ -243,5 +253,5 @@ async def run(config, update_callback: Optional[Callable] = None) -> None:
 
     print("Game over!")
     await update_callback(UpdateType.SIMULATION_END)
-    print(f"Next random number: {universe.rng.randint(0, 1000)}")
     config.clear()
+    return universe.rng.randint(0, 1000)
