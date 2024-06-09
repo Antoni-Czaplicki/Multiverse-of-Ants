@@ -18,7 +18,7 @@ class Role(enum.Enum):
 
 class Ant:
     NEXT_ID = 0
-
+    all_ants = []
     role: Role = Role.WORKER
     health = 50
     food = 60
@@ -31,6 +31,7 @@ class Ant:
         self.id = Ant.NEXT_ID
         Ant.NEXT_ID += 1
         self.position = position
+        Ant.all_ants.append(self)
 
     def __str__(self) -> str:
         return f"({self.position}, {self.role})"
