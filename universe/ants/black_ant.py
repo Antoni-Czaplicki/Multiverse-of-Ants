@@ -20,11 +20,11 @@ class BlackAnt(Ant):
     ) -> None:
         """
         Move the black ant in the universe.
+        
         :param universe: The universe.
         :type universe: Universe
         :param update_callback: The callback function to update the state.
         :type update_callback: Callable
-        :return:
         """
         available_directions = self.available_directions(universe.boundary)
         if available_directions:
