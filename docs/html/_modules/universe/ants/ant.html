@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>universe.ants.ant &mdash; Multiverse of Ants  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Multiverse of Ants
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../main.html">Main project file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../engine.html">Engine of the Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../classes.html">Project Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../statistics.html">CSV statistics</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Multiverse of Ants</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">universe.ants.ant</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for universe.ants.ant</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">universe.map</span> <span class="kn">import</span> <span class="n">Direction</span><span class="p">,</span> <span class="n">Object</span><span class="p">,</span> <span class="n">Position</span>
+<span class="kn">from</span> <span class="nn">universe.update</span> <span class="kn">import</span> <span class="n">UpdateType</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">universe.map.boundary</span> <span class="kn">import</span> <span class="n">Boundary</span>
+    <span class="kn">from</span> <span class="nn">universe.universe</span> <span class="kn">import</span> <span class="n">Universe</span>
+
+
+<div class="viewcode-block" id="Role">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Role">[docs]</a>
+<span class="k">class</span> <span class="nc">Role</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enum class for ant roles.&quot;&quot;&quot;</span>
+
+    <span class="n">WORKER</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">SOLDIER</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">QUEEN</span> <span class="o">=</span> <span class="mi">2</span></div>
+
+
+
+<div class="viewcode-block" id="Ant">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant">[docs]</a>
+<span class="k">class</span> <span class="nc">Ant</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class representing an ant in the universe.</span>
+
+<span class="sd">    :var id: The ID of the ant.</span>
+<span class="sd">    :type id: int</span>
+<span class="sd">    :var role: The role of the ant.</span>
+<span class="sd">    :type role: Role</span>
+<span class="sd">    :var health: The health of the ant.</span>
+<span class="sd">    :type health: int</span>
+<span class="sd">    :var food: The food of the ant.</span>
+<span class="sd">    :type food: int</span>
+<span class="sd">    :var damage: The damage of the ant.</span>
+<span class="sd">    :type damage: int</span>
+<span class="sd">    :var speed: The speed of the ant.</span>
+<span class="sd">    :type speed: int</span>
+<span class="sd">    :var position: The position of the ant.</span>
+<span class="sd">    :type position: Position</span>
+<span class="sd">    :var alive: Whether the ant is alive.</span>
+<span class="sd">    :type alive: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">NEXT_ID</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">role</span><span class="p">:</span> <span class="n">Role</span> <span class="o">=</span> <span class="n">Role</span><span class="o">.</span><span class="n">WORKER</span>
+    <span class="n">health</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">food</span> <span class="o">=</span> <span class="mi">60</span>
+    <span class="n">damage</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">speed</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">position</span><span class="p">:</span> <span class="n">Position</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">alive</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">position</span><span class="p">:</span> <span class="n">Position</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the ant.</span>
+
+<span class="sd">        :param position: The position of the ant.</span>
+<span class="sd">        :type position: Position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">Ant</span><span class="o">.</span><span class="n">NEXT_ID</span>
+        <span class="n">Ant</span><span class="o">.</span><span class="n">NEXT_ID</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">position</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the string representation of the ant.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="si">}</span><span class="s2">)&quot;</span>
+
+<div class="viewcode-block" id="Ant.available_directions">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.available_directions">[docs]</a>
+    <span class="k">def</span> <span class="nf">available_directions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boundary</span><span class="p">:</span> <span class="s2">&quot;Boundary&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Direction</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the available directions for the ant to move.</span>
+
+<span class="sd">        :param boundary: The boundary of the universe.</span>
+<span class="sd">        :type boundary: Boundary</span>
+<span class="sd">        :return: The available directions for the ant to move.</span>
+<span class="sd">        :rtype: List[Direction]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">direction</span>
+            <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="n">Direction</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">can_move</span><span class="p">(</span><span class="n">boundary</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Ant.move">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.move">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">universe</span><span class="p">:</span> <span class="s2">&quot;Universe&quot;</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Move the ant in the universe.</span>
+
+<span class="sd">        This method should be implemented by the subclasses.</span>
+
+<span class="sd">        :param universe: The universe.</span>
+<span class="sd">        :type universe: Universe</span>
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">__promote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Promote the ant to the next role.</span>
+
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        :param silent: Whether to suppress the update, defaults to False.</span>
+<span class="sd">        :type silent: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">WORKER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">Role</span><span class="o">.</span><span class="n">SOLDIER</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">damage</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">damage</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">*</span> <span class="mf">1.5</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">SOLDIER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">Role</span><span class="o">.</span><span class="n">QUEEN</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">*=</span> <span class="mi">3</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">damage</span> <span class="o">*=</span> <span class="mi">4</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot promote a queen&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">update_callback</span><span class="p">(</span><span class="n">UpdateType</span><span class="o">.</span><span class="n">ANT_PROMOTE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Ant.set_role">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.set_role">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">set_role</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="n">Role</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the role of the ant.</span>
+
+<span class="sd">        :param role: The role to set.</span>
+<span class="sd">        :type role: Role</span>
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">=</span> <span class="n">role</span>
+        <span class="k">if</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">SOLDIER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">=</span> <span class="mi">45</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">damage</span> <span class="o">=</span> <span class="mi">15</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">elif</span> <span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">QUEEN</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">=</span> <span class="mi">90</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">food</span> <span class="o">=</span> <span class="mi">25</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">damage</span> <span class="o">=</span> <span class="mi">40</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">await</span> <span class="n">update_callback</span><span class="p">(</span><span class="n">UpdateType</span><span class="o">.</span><span class="n">ANT_PROMOTE</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Ant.attack">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.attack">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">attack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Ant&quot;</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attack another ant.</span>
+
+<span class="sd">        :param other: The ant to attack.</span>
+<span class="sd">        :type other: Ant</span>
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">other</span><span class="o">.</span><span class="n">health</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">damage</span>
+        <span class="k">await</span> <span class="n">update_callback</span><span class="p">(</span><span class="n">UpdateType</span><span class="o">.</span><span class="n">ANT_ATTACK</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="n">health</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">other</span><span class="o">.</span><span class="n">die</span><span class="p">(</span><span class="n">update_callback</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Ant.die">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.die">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">die</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kill the ant.</span>
+
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alive</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">food</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">damage</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">await</span> <span class="n">update_callback</span><span class="p">(</span><span class="n">UpdateType</span><span class="o">.</span><span class="n">ANT_DEATH</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Ant.is_alive">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.is_alive">[docs]</a>
+    <span class="k">def</span> <span class="nf">is_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return whether the ant is alive.</span>
+
+<span class="sd">        :return: True if the ant is alive, False otherwise.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alive</span></div>
+
+
+<div class="viewcode-block" id="Ant.spawn_ants">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.spawn_ants">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">spawn_ants</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">universe</span><span class="p">:</span> <span class="s2">&quot;Universe&quot;</span><span class="p">,</span>
+        <span class="n">max_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Spawn new ants for the queen.</span>
+
+<span class="sd">        :param universe: The universe.</span>
+<span class="sd">        :type universe: Universe</span>
+<span class="sd">        :param max_count: The maximum number of ants to spawn.</span>
+<span class="sd">        :type max_count: int</span>
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">universe</span><span class="o">.</span><span class="n">ants_count</span> <span class="o">&lt;</span> <span class="n">universe</span><span class="o">.</span><span class="n">MAX_ANTS</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
+                <span class="n">universe</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">universe</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_count</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+            <span class="p">):</span>
+                <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">available_directions</span><span class="p">(</span><span class="n">universe</span><span class="o">.</span><span class="n">boundary</span><span class="p">):</span>
+                    <span class="n">new_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">calculate_new_position</span><span class="p">(</span>
+                        <span class="n">universe</span><span class="o">.</span><span class="n">boundary</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="mi">1</span>
+                    <span class="p">)</span>
+                    <span class="n">new_ant</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span><span class="n">new_position</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">universe</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span>
+                        <span class="k">await</span> <span class="n">new_ant</span><span class="o">.</span><span class="n">__promote</span><span class="p">(</span><span class="n">update_callback</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">universe</span><span class="o">.</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.02</span><span class="p">:</span>
+                            <span class="n">neighbors_20</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+                            <span class="n">same_color_queen_in_20_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                                <span class="p">[</span>
+                                    <span class="n">ant</span>
+                                    <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">neighbors_20</span>
+                                    <span class="k">for</span> <span class="n">ant</span> <span class="ow">in</span> <span class="n">universe</span><span class="o">.</span><span class="n">ants</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                                        <span class="p">(</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">[]</span>
+                                    <span class="p">)</span>
+                                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ant</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                                <span class="p">]</span>
+                            <span class="p">)</span>
+                            <span class="k">if</span> <span class="n">same_color_queen_in_20_count</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                                <span class="k">await</span> <span class="n">new_ant</span><span class="o">.</span><span class="n">__promote</span><span class="p">(</span><span class="n">update_callback</span><span class="p">,</span> <span class="n">silent</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                    <span class="n">universe</span><span class="o">.</span><span class="n">ants</span><span class="p">[(</span><span class="n">new_ant</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">new_ant</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">new_ant</span>
+                    <span class="p">)</span>
+                    <span class="n">universe</span><span class="o">.</span><span class="n">ants_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">await</span> <span class="n">update_callback</span><span class="p">(</span><span class="n">UpdateType</span><span class="o">.</span><span class="n">ANT_SPAWN</span><span class="p">,</span> <span class="n">new_ant</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Ant.process">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.process">[docs]</a>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">process</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">universe</span><span class="p">:</span> <span class="s2">&quot;Universe&quot;</span><span class="p">,</span>
+        <span class="n">update_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process the ant.</span>
+
+<span class="sd">        :param universe: The universe.</span>
+<span class="sd">        :type universe: Universe</span>
+<span class="sd">        :param update_callback: The callback function to update the state.</span>
+<span class="sd">        :type update_callback: Callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">front_position</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">calculate_new_position</span><span class="p">(</span>
+            <span class="n">universe</span><span class="o">.</span><span class="n">boundary</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span> <span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="n">targets</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">universe</span><span class="o">.</span><span class="n">ants</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">[])</span>
+            <span class="o">+</span> <span class="n">universe</span><span class="o">.</span><span class="n">ants</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">front_position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">front_position</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">[])</span>
+            <span class="o">+</span> <span class="n">universe</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">[])</span>
+            <span class="o">+</span> <span class="n">universe</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">front_position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">front_position</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">[])</span>
+        <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">entity</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">entity</span><span class="p">),</span> <span class="n">Ant</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">entity</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                        <span class="k">await</span> <span class="n">entity</span><span class="o">.</span><span class="n">attack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">entity</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">SOLDIER</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">WORKER</span><span class="p">:</span>
+                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__promote</span><span class="p">(</span><span class="n">update_callback</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">entity</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">QUEEN</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="o">==</span> <span class="n">Role</span><span class="o">.</span><span class="n">SOLDIER</span><span class="p">:</span>
+                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__promote</span><span class="p">(</span><span class="n">update_callback</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">entity</span><span class="p">),</span> <span class="n">Object</span><span class="p">):</span>
+                <span class="k">await</span> <span class="n">entity</span><span class="o">.</span><span class="n">interact</span><span class="p">(</span><span class="n">universe</span><span class="o">.</span><span class="n">boundary</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">entity</span><span class="o">.</span><span class="n">usages_left</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+                    <span class="ow">and</span> <span class="n">entity</span>
+                    <span class="ow">in</span> <span class="n">universe</span><span class="o">.</span><span class="n">objects</span><span class="p">[(</span><span class="n">entity</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
+                <span class="p">):</span>
+                    <span class="n">universe</span><span class="o">.</span><span class="n">objects</span><span class="p">[(</span><span class="n">entity</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">entity</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span>
+                        <span class="n">entity</span>
+                    <span class="p">)</span>
+                    <span class="n">universe</span><span class="o">.</span><span class="n">objects_count</span> <span class="o">-=</span> <span class="mi">1</span>
+                    <span class="k">await</span> <span class="n">update_callback</span><span class="p">(</span><span class="n">UpdateType</span><span class="o">.</span><span class="n">OBJECT_DESPAWN</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">entity</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span> <span class="ow">is</span> <span class="n">Role</span><span class="o">.</span><span class="n">QUEEN</span><span class="p">:</span>
+            <span class="c1"># check if queen is in nest</span>
+            <span class="k">for</span> <span class="n">nest</span> <span class="ow">in</span> <span class="n">universe</span><span class="o">.</span><span class="n">nests</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="ow">in</span> <span class="n">nest</span><span class="o">.</span><span class="n">area</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">food</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">food</span> <span class="o">+=</span> <span class="mi">2</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">&lt;</span> <span class="mi">90</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">health</span> <span class="o">+=</span> <span class="mi">3</span>
+                    <span class="n">neighbors_5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">get_neighbors</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+                    <span class="n">same_color_ants_in_5_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="n">ant</span>
+                            <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="n">neighbors_5</span>
+                            <span class="k">for</span> <span class="n">ant</span> <span class="ow">in</span> <span class="n">universe</span><span class="o">.</span><span class="n">ants</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">position</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">[])</span>
+                            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ant</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                        <span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="n">nest</span><span class="o">.</span><span class="n">queen</span> <span class="o">=</span> <span class="bp">self</span>
+                    <span class="k">if</span> <span class="n">same_color_ants_in_5_count</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+                        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">spawn_ants</span><span class="p">(</span><span class="n">universe</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">update_callback</span><span class="p">)</span>
+                    <span class="k">break</span></div>
+
+
+<div class="viewcode-block" id="Ant.to_dict">
+<a class="viewcode-back" href="../../../classes.html#universe.ants.ant.Ant.to_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a dictionary representation of the ant.</span>
+
+<span class="sd">        :return: The dictionary representation of the ant.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">role</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;BlackAnt&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;RedAnt&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span>
+            <span class="p">}[</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">],</span>
+            <span class="s2">&quot;health&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">health</span><span class="p">,</span>
+            <span class="s2">&quot;damage&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">damage</span><span class="p">,</span>
+            <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">speed</span><span class="p">,</span>
+            <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span>
+            <span class="s2">&quot;alive&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">alive</span><span class="p">,</span>
+        <span class="p">}</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Project.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

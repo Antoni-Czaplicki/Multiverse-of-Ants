@@ -1,0 +1,69 @@
+Project Modules
+===============
+
+
+
+.. automodule:: universe.engine
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.rng
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.universe
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.update
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.ants.ant
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.ants.black_ant
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.ants.red_ant
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.map.area
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.map.boundary
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.map.nest
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.map.object
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: universe.map.position
+   :members:
+   :undoc-members:
+   :show-inheritance:

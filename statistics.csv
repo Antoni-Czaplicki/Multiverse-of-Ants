@@ -1,3 +1,0 @@
-ROUND,total_ants,alive_ants,dead_ants,black_ants_alive,red_ants_alive,worker_ants_alive,soldier_ants_alive,queen_ants_alive,black_ants_dead,red_ants_dead,worker_ants_dead,soldier_ants_dead,queen_ants_dead,avg_health,avg_speed,avg_damage
-20,159,142,17,96,46,139,1,2,7,10,17,0,0,48.03521126760563,3.295774647887324,12.04225352112676
-40,171,138,33,95,43,135,1,2,12,21,33,0,0,48.891304347826086,3.282608695652174,11.992753623188406
