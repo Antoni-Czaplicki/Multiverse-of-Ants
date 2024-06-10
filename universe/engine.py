@@ -203,10 +203,10 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
         )
     else:
         universe.boundary.set_boundary_by_size(DEFAULT_SIZE)
-        print("Setting default boundary")
-    print(
-        f"universe.boundary: \n-x: {universe.boundary.position_1.x}\n-y: {universe.boundary.position_1.y}\nx: {universe.boundary.position_2.x}\ny: {universe.boundary.position_2.y}\n"
-    )
+        print("No boundary size provided, using default size.")
+    # print(
+    #     f"universe.boundary: \n-x: {universe.boundary.position_1.x}\n-y: {universe.boundary.position_1.y}\nx: {universe.boundary.position_2.x}\ny: {universe.boundary.position_2.y}\n"
+    # )
 
     await initial_spawn(universe, update_callback)
 

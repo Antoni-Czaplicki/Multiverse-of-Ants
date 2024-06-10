@@ -42,6 +42,7 @@ updateLabel("label-scale", tempScale + "x");
 
 const settingsRectangle = document.getElementById("settings-rectangle");
 const applySettingsButton = document.getElementById("apply-settings-button");
+let applySettingsButtonDisabled = true;
 
 settingsRectangle.addEventListener("click", handleSettingsClick);
 document.addEventListener("DOMContentLoaded", adjustSettingsRectangleHeight);
@@ -115,6 +116,7 @@ function handleSettingsClick() {
     settingsRectangle.style.cursor = (tempScale === 16) ? "zoom-out" : "zoom-in";
     updateLabel("label-scale", tempScale + "x");
     applySettingsButton.disabled = false;
+    applySettingsButtonDisabled = false;
 }
 
 function adjustSettingsRectangleHeight() {
@@ -126,6 +128,7 @@ function handleResize() {
     updateLabel("label-width", canvas.offsetWidth);
     updateLabel("label-height", canvas.offsetHeight);
     applySettingsButton.disabled = false;
+    applySettingsButtonDisabled = false;
 }
 
 function applySettings() {
@@ -137,6 +140,7 @@ function applySettings() {
     updateCanvasSize(canvas);
     updateCanvasSize(nestCanvas);
     applySettingsButton.disabled = true;
+    applySettingsButtonDisabled = true;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     nestCtx.clearRect(0, 0, nestCanvas.width, nestCanvas.height);
     ants = {};
@@ -206,6 +210,17 @@ function disableAllControls() {
     settingsRectangle.disabled = true;
     settingsRectangle.style.cursor = "not-allowed";
 }
+
+function enableDisabledControls() {
+    document.querySelectorAll("button, input").forEach(element => {
+        element.disabled = false;
+    });
+    applySettingsButton.disabled = applySettingsButtonDisabled;
+    settingsRectangle.disabled = false;
+    settingsRectangle.style.cursor = (tempScale === 16) ? "zoom-out" : "zoom-in";
+
+}
+
 function handleWebSocketMessage(event) {
     messageQueue.push(event.data);
     if (!processingMessages) {
@@ -252,13 +267,13 @@ function handleEvent(data) {
     }
 }
 
-function handleAntSpawn({ ant }) {
+function handleAntSpawn({ant}) {
     ants[ant.id] = ant;
     drawAnt(ant);
     updateAntCount();
 }
 
-function handleAntMove({ ant }) {
+function handleAntMove({ant}) {
     if (ants[ant.id]) {
         clearAnt(ants[ant.id]);
     } else {
@@ -268,7 +283,7 @@ function handleAntMove({ ant }) {
     drawAnt(ant);
 }
 
-function handleAntDeath({ ant }) {
+function handleAntDeath({ant}) {
     if (!ants[ant.id]) return;
     clearAnt(ants[ant.id]);
     delete ants[ant.id];
@@ -301,14 +316,14 @@ function updateAntCount(delta = 0) {
     antCountElement.innerText = antCount.toString();
 }
 
-function updateTps({ state }) {
+function updateTps({state}) {
     tpsElement.innerText = state;
     if (state < tps_goal) {
         tpsHistoryElement.innerText += state + ", ";
     }
 }
 
-function setTpsGoal({ state }) {
+function setTpsGoal({state}) {
     tps_goal = state;
 }
 
@@ -318,6 +333,7 @@ function startSimulationHandler() {
     document.getElementById("websocket-error-notification").style.display = "none";
     document.getElementById("overload-notification").style.display = "none";
     blurOverlayElement.style.opacity = 0;
+    enableDisabledControls();
     nestCtx.clearRect(0, 0, nestCanvas.width, nestCanvas.height);
 }
 
@@ -346,19 +362,19 @@ function errorSimulationNotRunning() {
     blurOverlayElement.style.opacity = 0;
 }
 
-function handleNestSpawn({ target }) {
+function handleNestSpawn({target}) {
     nests.push(target);
     nestCtx.fillStyle = "lightgray";
     nestCtx.fillRect(target.area.position_1.x * SCALE, target.area.position_1.y * SCALE, target.area.width * SCALE, target.area.height * SCALE);
 }
 
-function handleObjectSpawn({ target }) {
+function handleObjectSpawn({target}) {
     objects.push(target);
     ctx.fillStyle = objectTypeColors[target.type];
     ctx.fillRect(target.position.x * SCALE, target.position.y * SCALE, scales.maxFloorHalf, scales.maxFloorHalf);
 }
 
-function handleObjectDespawn({ target }) {
+function handleObjectDespawn({target}) {
     objects = objects.filter(obj => obj.id !== target.id);
     clearObject(target);
 }
@@ -367,7 +383,7 @@ function clearObject(target) {
     ctx.clearRect(target.position.x * SCALE, target.position.y * SCALE, scales.maxFloorHalf, scales.maxFloorHalf);
 }
 
-function updateCurrentRound({ state }) {
+function updateCurrentRound({state}) {
     roundElement.innerText = state.toString();
 }
 
@@ -408,19 +424,19 @@ function startSimulation() {
 }
 
 function stopSimulation() {
-    sendWebSocketMessage({ type: "SIMULATION_END" });
+    sendWebSocketMessage({type: "SIMULATION_END"});
     document.getElementById("overload-notification").style.display = "unset";
     blurOverlayElement.style.opacity = 1;
 }
 
 function pauseSimulation() {
-    sendWebSocketMessage({ type: "SIMULATION_PAUSE" });
+    sendWebSocketMessage({type: "SIMULATION_PAUSE"});
     document.getElementById("overload-notification").style.display = "unset";
     blurOverlayElement.style.opacity = 1;
 }
 
 function resumeSimulation() {
-    sendWebSocketMessage({ type: "SIMULATION_RESUME" });
+    sendWebSocketMessage({type: "SIMULATION_RESUME"});
 }
 
 function handleTpsInput() {

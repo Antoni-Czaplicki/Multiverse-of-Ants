@@ -1,4 +1,6 @@
 # Universe Simulation Using Seed as Parameter Generator
+[![Documentation Status](https://readthedocs.org/projects/multiverse-of-ants/badge/?version=latest&style=for-the-badge)](https://multiverse-of-ants.readthedocs.io/en/latest/?badge=latest)
+
 
 ## Project Goal:
 The goal of this project is to create a simple universe simulator based on the use of a single seed as a generator for all parameters of the simulated environment. The inspiration for the project is the seed mechanism used in the game Minecraft, where entering a specific seed generates a unique game environment. In our case, the seed will be used to generate all parameters for simulated environments, such as ant life, population of organisms in the forest.
@@ -14,3 +16,33 @@ The goal of this project is to create a simple universe simulator based on the u
 8. The ability to compare results with other universes through seed values, which will allow for the analysis of differences between different environments.
 
 Thanks to such an extensive simulation, students will be able to not only experiment with different seeds and parameters, but also observe the simulation in real time and compare results between different universes. This project will allow for the practical application of object-oriented programming techniques and will enable understanding of the basics of agent simulation. It is worth noting that all simulation parameters will be deterministically dependent on one seed value, which will allow for repeatability of simulation results.
+
+## Setup Instructions
+
+1. Clone the repository to your local machine:
+   ```
+   git clone https://github.com/Antoni-Czaplicki/Multiverse-of-Ants.git
+   ```
+
+2. Navigate to the project directory:
+   ```
+   cd Multiverse-of-Ants
+   ```
+
+3. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+## Run Instructions
+
+1. To run the program, use the following command:
+   ```
+   python main.py
+   ```
+
+2. Follow the instructions displayed in the console to start the simulation.
+
+3. After the simulation is complete, the results will be saved in the `statistics.csv` file.
+
+

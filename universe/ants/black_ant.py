@@ -20,7 +20,7 @@ class BlackAnt(Ant):
     ) -> None:
         """
         Move the black ant in the universe.
-        
+
         :param universe: The universe.
         :type universe: Universe
         :param update_callback: The callback function to update the state.
