@@ -28,13 +28,29 @@ def start_http_server():
 
 
 async def handler(websocket):
-    """Handle the websocket connection."""
+    """
+    Handle the websocket connection.
+
+    :param websocket: The websocket connection.
+    :type websocket: websockets.WebSocketServerProtocol
+    """
     running_task = None
 
     async def callback(
         update_type: UpdateType, entity: Ant | None = None, target=None, state=None
     ):
-        """Send the update to the client."""
+        """
+        Send the update to the client.
+
+        :param update_type: The update type.
+        :type update_type: UpdateType
+        :param entity: The entity.
+        :type entity: Ant | None
+        :param target: The target.
+        :type target: Any
+        :param state: The state.
+        :type state: Any
+        """
         event = Update(update_type, entity, target, state).to_dict()
         try:
             await websocket.send(json.dumps(event))
@@ -118,7 +134,14 @@ executor = ThreadPoolExecutor(max_workers=1)
 
 
 def run_simulation(running_task, config):
-    """Run the simulation."""
+    """
+    Run the simulation.
+
+    :param running_task: The running task.
+    :type running_task: asyncio.Task
+    :param config: The configuration.
+    :type config: dict
+    """
     if running_task:
         print("Canceling running simulation")
         running_task.cancel()
@@ -127,7 +150,12 @@ def run_simulation(running_task, config):
 
 
 def stop_simulation(running_task):
-    """Stop the simulation."""
+    """
+    Stop the simulation.
+
+    :param running_task: The running task.
+    :type running_task: asyncio.Task
+    """
     if running_task:
         print("Canceling running simulation")
         running_task.cancel()
@@ -172,4 +200,10 @@ async def start_servers():
         await start_servers()
 
 
-asyncio.run(start_servers())
+def main():
+    """Start the main function."""
+    asyncio.run(start_servers())
+
+
+if __name__ == "__main__":
+    main()

@@ -3,7 +3,16 @@ import statistics
 
 
 def save_statistics_to_csv(ants, filename, round_counter):
-    """Save statistics about the ants to a CSV file."""
+    """
+    Save statistics about the ants to a CSV file.
+
+    :param ants: A list of ants.
+    :type ants: list
+    :param filename: The name of the CSV file.
+    :type filename: str
+    :param round_counter: The current round number.
+    :type round_counter: int
+    """
 
     # Calculating statistics
     total_ants = len(ants)

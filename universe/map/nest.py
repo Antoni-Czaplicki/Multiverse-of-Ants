@@ -11,9 +11,13 @@ if TYPE_CHECKING:
 class Nest:
     """
     Class representing a nest in the universe.
+
+    :var area: The area of the nest.
+    :type area: Area
+    :var queen: The queen ant of the nest.
+    :type queen: Ant
     """
 
-    ants_per_unit_area: int = 5
     queen: "Ant" = None
 
     def __init__(self, area: Area):
@@ -57,10 +61,15 @@ class Nest:
         Generate a random nest area.
 
         :param universe: The universe to generate the nest area in.
+        :type universe: Universe
         :param size_from: The minimum size of the nest area.
+        :type size_from: int
         :param size_to: The maximum size of the nest area.
+        :type size_to: int
         :param min_distance: The minimum distance from the given area.
+        :type min_distance: int
         :param min_distance_from: The area to keep distance from.
+        :type min_distance_from: Optional[Area]
         :return: The generated nest area.
         :rtype: Area
         """

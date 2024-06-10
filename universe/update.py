@@ -39,11 +39,6 @@ class UpdateType(enum.Enum):
 class Update:
     """
     Class representing an update in the simulation.
-
-    Attributes:
-        type (UpdateType): The type of the update.
-        ant (Optional[Ant]): The ant involved in the update, if any.
-        target (Optional[Any]): The target of the update, if any.
     """
 
     type: UpdateType = UpdateType.UNKNOWN
@@ -60,11 +55,14 @@ class Update:
         """
         Initialize an Update instance.
 
-        Args:
-            _type (UpdateType): The type of the update.
-            ant (Optional[Ant]): The ant involved in the update, if any.
-            target (Optional[Any]): The target of the update, if any.
-            state (Optional[Any]): The state of the update, if any.
+        :param _type: The type of the update.
+        :type _type: UpdateType
+        :param ant: The ant involved in the update.
+        :type ant: Optional[Ant]
+        :param target: The target of the update.
+        :type target: Optional[Any]
+        :param state: The state of the update.
+        :type state: Optional[Any]
         """
         self.type = _type
         self.ant = ant
@@ -75,8 +73,7 @@ class Update:
         """
         Convert the update to a dictionary.
 
-        Returns:
-            dict: A dictionary representation of the update.
+        :return: The dictionary representation of the update.
         """
         return {
             "type": self.type.name,

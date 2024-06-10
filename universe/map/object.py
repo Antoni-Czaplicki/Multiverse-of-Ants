@@ -17,7 +17,15 @@ class ObjectType(enum.Enum):
 
 
 class Object:
-    """Class representing an object in the universe."""
+    """Class representing an object in the universe.
+
+    :var position: The position of the object.
+    :type position: Position
+    :var object_type: The type of the object.
+    :type object_type: ObjectType
+    :var usages_left: The number of usages left for the object.
+    :type usages_left: int
+    """
 
     usages_left: int = 3
 
@@ -48,6 +56,7 @@ class Object:
         Interact with an ant.
 
         :param boundary: The boundary of the universe.
+        :type boundary: Boundary
         :param ant: The ant to interact with.
         :type ant: Ant
         :param update_callback: The callback function to update the state.

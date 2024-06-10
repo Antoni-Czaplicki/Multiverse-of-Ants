@@ -26,7 +26,9 @@ class RedAnt(Ant):
         """
         Move the red ant in the universe.
         :param universe:
+        :type universe: Universe
         :param update_callback:
+        :type update_callback: Callable
         :return:
         """
         available_directions = self.available_directions(universe.boundary)

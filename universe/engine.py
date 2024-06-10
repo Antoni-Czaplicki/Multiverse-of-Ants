@@ -24,7 +24,14 @@ DEFAULT_TPS = 20
 
 
 def __print_map(ants, boundary) -> None:
-    """Print the map of the universe."""
+    """
+    Print the map of the universe.
+
+    :param ants: A list of ants.
+    :type ants: list
+    :param boundary: The boundary of the universe.
+    :type boundary: Boundary
+    """
     width = boundary.width
     height = boundary.height
 
@@ -59,11 +66,19 @@ def __print_map(ants, boundary) -> None:
     print("\n")
 
 
-
 async def create_ant(
-        ant_type: type, universe: Universe, update_callback: Callable
+    ant_type: type, universe: Universe, update_callback: Callable
 ) -> None:
-    """Helper function to create an ant and append it to ants list."""
+    """
+    Helper function to create an ant and append it to ants list.
+
+    :param ant_type: The type of the ant.
+    :type ant_type: type
+    :param universe: The universe.
+    :type universe: Universe
+    :param update_callback: The callback function to update the frontend.
+    :type update_callback: Callable
+    """
     new_ant = ant_type(
         Position(
             universe.rng.randint(
@@ -81,7 +96,14 @@ async def create_ant(
 
 
 async def __create_random_object(universe: Universe, update_callback: Callable) -> None:
-    """Helper function to create an object and append it to objects list."""
+    """
+    Helper function to create an object and append it to objects list.
+
+    :param universe: The universe.
+    :type universe: Universe
+    :param update_callback: The callback function to update the frontend.
+    :type update_callback: Callable
+    """
     new_object = Object(
         Position(
             universe.rng.randint(
@@ -100,18 +122,24 @@ async def __create_random_object(universe: Universe, update_callback: Callable) 
     await update_callback(UpdateType.OBJECT_SPAWN, target=new_object)
 
 
-
 async def initial_spawn(
-        universe: Universe,
-        update_callback: Callable,
+    universe: Universe,
+    update_callback: Callable,
 ) -> None:
-    """Initial spawn of ants, nests and objects in the universe."""
+    """
+    Initial spawn of ants, nests and objects in the universe.
+
+    :param universe: The universe.
+    :type universe: Universe
+    :param update_callback: The callback function to update the frontend.
+    :type update_callback: Callable
+    """
     for _ in range(
-            universe.rng.randint(100, max(universe.boundary.size() // 500, 123)) // 3
+        universe.rng.randint(100, max(universe.boundary.size() // 500, 123)) // 3
     ):
-        await __create_ant(BlackAnt, universe, update_callback)
-        await __create_ant(BlackAnt, universe, update_callback)
-        await __create_ant(RedAnt, universe, update_callback)
+        await create_ant(BlackAnt, universe, update_callback)
+        await create_ant(BlackAnt, universe, update_callback)
+        await create_ant(RedAnt, universe, update_callback)
     nest_1 = Nest(Nest.generate_random_nest_area(universe))
     await update_callback(UpdateType.NEST_SPAWN, target=nest_1)
     nest_2 = Nest(
@@ -152,12 +180,10 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
     """
     Run the simulation.
 
-    Args:
-        config: Configuration for the simulation.
-        update_callback: Callback function to update the frontend.
-
-    Returns:
-        int: Next random number for the simulation.
+    :param config: The configuration of the simulation.
+    :type config: dict
+    :param update_callback: The callback function to update the frontend.
+    :type update_callback: Optional[Callable]
     """
 
     tps = config.get("tps", DEFAULT_TPS)
@@ -168,9 +194,9 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
     await update_callback(UpdateType.SIMULATION_START)
     universe.rng.set_seed(config.get("seed", "0"))
     if (
-            "boundary" in config
-            and "width" in config["boundary"]
-            and "height" in config["boundary"]
+        "boundary" in config
+        and "width" in config["boundary"]
+        and "height" in config["boundary"]
     ):
         universe.boundary.set_boundary_by_width_height(
             config["boundary"]["width"], config["boundary"]["height"]
@@ -182,7 +208,7 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
         f"universe.boundary: \n-x: {universe.boundary.position_1.x}\n-y: {universe.boundary.position_1.y}\nx: {universe.boundary.position_2.x}\ny: {universe.boundary.position_2.y}\n"
     )
 
-    await __initial_spawn(universe, update_callback)
+    await initial_spawn(universe, update_callback)
 
     await update_callback(UpdateType.SIMULATION_SET_TPS, state=tps)
     last_timestamp = datetime.now()
@@ -217,15 +243,15 @@ async def run(config: dict, update_callback: Optional[Callable] = None) -> int:
                 if ant.is_alive():
                     await ant.process(universe, update_callback)
                 if (
-                        not ant.is_alive()
-                        and ant in universe.ants[(ant.position.x, ant.position.y)]
+                    not ant.is_alive()
+                    and ant in universe.ants[(ant.position.x, ant.position.y)]
                 ):
                     universe.ants[(ant.position.x, ant.position.y)].remove(ant)
                     universe.ants_count -= 1
 
         if universe.objects_count < universe.MAX_OBJECTS:
             for _ in range(
-                    universe.rng.randint(0, max(universe.boundary.size() // 2000, 10))
+                universe.rng.randint(0, max(universe.boundary.size() // 2000, 10))
             ):
                 await __create_random_object(universe, update_callback)
 

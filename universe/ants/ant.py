@@ -19,7 +19,26 @@ class Role(enum.Enum):
 
 
 class Ant:
-    """Class representing an ant in the universe."""
+    """
+    Class representing an ant in the universe.
+
+    :var id: The ID of the ant.
+    :type id: int
+    :var role: The role of the ant.
+    :type role: Role
+    :var health: The health of the ant.
+    :type health: int
+    :var food: The food of the ant.
+    :type food: int
+    :var damage: The damage of the ant.
+    :type damage: int
+    :var speed: The speed of the ant.
+    :type speed: int
+    :var position: The position of the ant.
+    :type position: Position
+    :var alive: Whether the ant is alive.
+    :type alive: bool
+    """
 
     NEXT_ID = 0
     role: Role = Role.WORKER
@@ -31,7 +50,13 @@ class Ant:
     alive = True
 
     def __init__(self, position: Position):
-        """Initialize the ant."""
+        """
+        Initialize the ant.
+
+        :param position: The position of the ant.
+        :type position: Position
+        """
+
         self.id = Ant.NEXT_ID
         Ant.NEXT_ID += 1
         self.position = position
@@ -41,7 +66,14 @@ class Ant:
         return f"({self.position}, {self.role})"
 
     def available_directions(self, boundary: "Boundary") -> List[Direction]:
-        """Return the available directions for the ant to move."""
+        """
+        Return the available directions for the ant to move.
+
+        :param boundary: The boundary of the universe.
+        :type boundary: Boundary
+        :return: The available directions for the ant to move.
+        :rtype: List[Direction]
+        """
         return [
             direction
             for direction in Direction
@@ -50,11 +82,27 @@ class Ant:
 
     @abstractmethod
     async def move(self, universe: "Universe", update_callback: Callable):
-        """Move the ant in the universe."""
+        """
+        Move the ant in the universe.
+
+        This method should be implemented by the subclasses.
+
+        :param universe: The universe.
+        :type universe: Universe
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        """
         pass
 
-    async def __promote(self, update_callback, silent=False):
-        """Promote the ant to the next role."""
+    async def __promote(self, update_callback: Callable, silent=False):
+        """
+        Promote the ant to the next role.
+
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        :param silent: Whether to suppress the update, defaults to False.
+        :type silent: bool
+        """
         if self.role == Role.WORKER:
             self.role = Role.SOLDIER
             self.health = round(self.health * 1.5)
@@ -70,8 +118,15 @@ class Ant:
         if not silent:
             await update_callback(UpdateType.ANT_PROMOTE, self)
 
-    async def set_role(self, role, update_callback):
-        """Set the role of the ant."""
+    async def set_role(self, role: Role, update_callback: Callable):
+        """
+        Set the role of the ant.
+
+        :param role: The role to set.
+        :type role: Role
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        """
         self.role = role
         if role == Role.SOLDIER:
             self.health = 45
@@ -84,15 +139,27 @@ class Ant:
             self.speed = 1
         await update_callback(UpdateType.ANT_PROMOTE, self)
 
-    async def attack(self, other, update_callback):
-        """Attack another ant."""
+    async def attack(self, other: "Ant", update_callback: Callable):
+        """
+        Attack another ant.
+
+        :param other: The ant to attack.
+        :type other: Ant
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        """
         other.health -= self.damage
         await update_callback(UpdateType.ANT_ATTACK, self, other)
         if other.health <= 0:
             await other.die(update_callback)
 
-    async def die(self, update_callback):
-        """Kill the ant."""
+    async def die(self, update_callback: Callable):
+        """
+        Kill the ant.
+
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        """
         self.alive = False
         self.health = 0
         self.food = 0
@@ -100,8 +167,13 @@ class Ant:
         self.speed = 0
         await update_callback(UpdateType.ANT_DEATH, self)
 
-    def is_alive(self):
-        """Return whether the ant is alive."""
+    def is_alive(self) -> bool:
+        """
+        Return whether the ant is alive.
+
+        :return: True if the ant is alive, False otherwise.
+        :rtype: bool
+        """
         return self.alive
 
     async def spawn_ants(
@@ -110,7 +182,16 @@ class Ant:
         max_count: int,
         update_callback: Callable,
     ):
-        """Spawn new ants for the queen."""
+        """
+        Spawn new ants for the queen.
+
+        :param universe: The universe.
+        :type universe: Universe
+        :param max_count: The maximum number of ants to spawn.
+        :type max_count: int
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        """
         if universe.ants_count < universe.MAX_ANTS:
             for _ in range(
                 universe.rng.choice([universe.rng.randint(0, max_count), 0, 0, 0, 0])
@@ -148,7 +229,14 @@ class Ant:
         universe: "Universe",
         update_callback: Callable,
     ):
-        """Process the ant."""
+        """
+        Process the ant.
+
+        :param universe: The universe.
+        :type universe: Universe
+        :param update_callback: The callback function to update the state.
+        :type update_callback: Callable
+        """
         front_position = self.position.calculate_new_position(
             universe.boundary, self.position.direction, 1
         )
@@ -206,7 +294,12 @@ class Ant:
                     break
 
     def to_dict(self):
-        """Return a dictionary representation of the ant."""
+        """
+        Return a dictionary representation of the ant.
+
+        :return: The dictionary representation of the ant.
+        :rtype: dict
+        """
         return {
             "id": self.id,
             "role": self.role.name,

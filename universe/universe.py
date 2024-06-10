@@ -7,7 +7,22 @@ from .rng import RNG
 
 
 class Universe:
-    """Class representing the universe."""
+    """
+    Class representing the universe.
+
+    The universe is the environment in which the simulation takes place.
+
+    :var rng: The random number generator.
+    :type rng: RNG
+    :var boundary: The boundary of the universe.
+    :type boundary: Boundary
+    :var ants: A dictionary of ants.
+    :type ants: Dict[Tuple[int, int], List[Ant]]
+    :var objects: A dictionary of objects.
+    :type objects: Dict[Tuple[int, int], List[Object]]
+    :var nests: A list of nests.
+    :type nests: List[Nest]
+    """
 
     rng: RNG
     boundary: Boundary

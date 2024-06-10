@@ -8,6 +8,8 @@ if TYPE_CHECKING:
 
 
 class Direction(enum.Enum):
+    """Enum class for directions."""
+
     NORTH = 0
     EAST = 90
     SOUTH = 180
@@ -15,15 +17,29 @@ class Direction(enum.Enum):
 
     @staticmethod
     def from_angle(angle: int) -> "Direction":
-        """Convert an angle to a direction."""
+        """Convert an angle to a direction.
+
+        :param angle: The angle.
+        :type angle: int
+        :return: The direction.
+        :rtype: Direction
+        """
         return Direction((angle + 45) % 360 // 90)
 
     def to_angle(self) -> int:
-        """Convert the direction to an angle."""
+        """Convert the direction to an angle.
+
+        :return: The angle.
+        :rtype: int
+        """
         return self.value
 
     def to_arrow(self) -> str:
-        """Convert the direction to an arrow."""
+        """Convert the direction to an arrow.
+
+        :return: The arrow.
+        :rtype: str
+        """
         return {
             Direction.NORTH: "↑",
             Direction.EAST: "→",
@@ -34,7 +50,15 @@ class Direction(enum.Enum):
 
 class Position:
     def __init__(self, x: int, y: int, direction: Direction = Direction.NORTH):
-        """Initialize a position."""
+        """Initialize a position.
+
+        :param x: The x-coordinate of the position.
+        :type x: int
+        :param y: The y-coordinate of the position.
+        :type y: int
+        :param direction: The direction of the position, defaults to Direction.NORTH.
+        :type direction: Direction
+        """
         self.x = x
         self.y = y
         self.direction = direction
@@ -88,7 +112,13 @@ class Position:
         return max(abs(self.x - other.x), abs(self.y - other.y))
 
     def get_neighbors(self, distance: int = 1) -> list["Position"]:
-        """Get the neighbors of the position."""
+        """Get the neighbors of the position.
+
+        :param distance: The distance to get the neighbors from, defaults to 1.
+        :type distance: int
+        :return: The neighbors of the position.
+        :rtype: list[Position]
+        """
         return [
             Position(self.x + dx, self.y + dy)
             for dx in range(-distance, distance + 1)
@@ -96,15 +126,21 @@ class Position:
             if dx != 0 or dy != 0
         ]
 
-    def direction_to(self, other):
-        """Get the direction to another position."""
-        return (other - self).normalize()
-
     @cache
     def calculate_new_position(
         self, boundary: "Boundary", direction: Direction, distance: int = 1
     ) -> "Position":
-        """Calculate a new position based on a direction and distance."""
+        """Calculate a new position based on a direction and distance.
+
+        :param boundary: The boundary of the universe.
+        :type boundary: Boundary
+        :param direction: The direction to move.
+        :type direction: Direction
+        :param distance: The distance to move, defaults to 1.
+        :type distance: int
+        :return: The new position.
+        :rtype: Position
+        """
         if direction == Direction.NORTH:
             return Position(self.x, min(self.y + distance, boundary.position_2.y))
         elif direction == Direction.EAST:
@@ -123,7 +159,18 @@ class Position:
         distance: int = 1,
         new_position: "Position" = None,
     ):
-        """Move the position."""
+        """Move the position.
+
+        :param boundary: The boundary of the universe.
+        :type boundary: Boundary
+        :param direction: The direction to move, defaults to None.
+        :type direction: Direction
+        :param distance: The distance to move, defaults to 1.
+        :type distance: int
+        :param new_position: The new position to move to, defaults to None.
+        :type new_position: Position
+        """
+
         if new_position:
             if boundary.contains(new_position):
                 self.x, self.y = new_position
@@ -142,13 +189,27 @@ class Position:
     def can_move(
         self, boundary: "Boundary", direction: Direction, distance: int = 1
     ) -> bool:
-        """Check if the position can move in a direction."""
+        """Check if the position can move in a direction.
+
+        :param boundary: The boundary of the universe.
+        :type boundary: Boundary
+        :param direction: The direction to move.
+        :type direction: Direction
+        :param distance: The distance to move, defaults to 1.
+        :type distance: int
+        :return: True if the position can move, False otherwise.
+        :rtype: bool
+        """
         return boundary.contains(
             self.calculate_new_position(boundary, direction, distance)
         )
 
     def to_dict(self) -> dict:
-        """Convert the position to a dictionary."""
+        """Convert the position to a dictionary.
+
+        :return: The dictionary representation of the position.
+        :rtype: dict
+        """
         return {
             "x": self.x,
             "y": self.y,
