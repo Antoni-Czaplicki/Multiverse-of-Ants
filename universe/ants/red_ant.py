@@ -25,9 +25,9 @@ class RedAnt(Ant):
     ) -> None:
         """
         Move the red ant in the universe.
-        :param universe:
+        :param universe: The universe.
         :type universe: Universe
-        :param update_callback:
+        :param update_callback: The callback function to update the state.
         :type update_callback: Callable
         :return:
         """

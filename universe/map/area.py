@@ -63,7 +63,7 @@ class Area:
         Calculate the smallest distance from the area to another position or area.
 
         :param other: The other position or area.
-        :type other: Union[Position, "Area"]
+        :type other: Union[Position, Area]
         :return: The smallest distance.
         :rtype: float
         """
